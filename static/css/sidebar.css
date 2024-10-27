@@ -1,0 +1,37 @@
+/* sidebar.css */
+
+.sidebar {
+    width: 250px;
+    background-color: #2C2C3D;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    min-height: 100vh;
+}
+
+.logo {
+    font-size: 24px;
+    color: #9F7AEA;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.menu {
+    width: 100%;
+}
+
+.menu-item {
+    display: block;
+    padding: 15px;
+    color: #FFFFFF;
+    text-decoration: none;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.menu-item:hover, .menu-item.active {
+    background-color: #9F7AEA;
+}

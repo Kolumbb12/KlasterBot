@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Чат{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="chat-container">
+        <h2>Новый агент</h2>
+        <p class="agent-status">Агент отключен</p>
+
+        <!-- Окно для сообщений -->
+        <div id="chat-box" class="chat-box">
+            <div class="message bot-message">
+                <img src="{{ url_for('static', filename='images/bot_icon.png') }}" alt="Bot Icon">
+                <span>Здравствуйте, чем могу вам помочь?</span>
+            </div>
+            <!-- Здесь будут отображаться сообщения -->
+        </div>
+
+        <!-- Поле для ввода сообщения -->
+        <div class="chat-input-area">
+            <label for="chat-input">База знаний:</label>
+            <textarea id="chat-input" placeholder="Введите свой запрос..."></textarea>
+            <button id="send-button">➤</button>
+            <button id="clear-button">Очистить чат</button>
+        </div>
+
+        <p class="chat-info">Для обновления текущего диалога в любом мессенджере введите "/restart"</p>
+    </div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Выбор агента{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/agent_selection.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Выбор Агента</h1>
+
+        <!-- Карточка агента -->
+        <div class="agent-card">
+            <img src="{{ url_for('static', filename='images/agent_avatar.png') }}" alt="Аватар агента" class="agent-avatar">
+            <h2>Новый агент?</h2>
+            <p>ID: gpt-4o-2024-08-06</p>
+            <p class="agent-status">Агент выключен</p>
+
+            <div class="agent-actions">
+                <button onclick="location.href='{{ url_for('main.agent_settings') }}'">⚙ Настроить агента</button>
+            </div>
+
+            <button class="select-button">ВЫБРАН</button>
+        </div>
+    </div>
+{% endblock %}

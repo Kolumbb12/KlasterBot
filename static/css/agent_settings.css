@@ -1,0 +1,46 @@
+/* agent_settings.css */
+
+.container {
+    background-color: #2C2C3D;
+    padding: 20px;
+    border-radius: 10px;
+    color: #FFFFFF;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.input-block {
+    margin-bottom: 15px;
+}
+
+.input-block label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.input-block input, .input-block textarea, .input-block select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #1E1E2F;
+    color: #FFFFFF;
+}
+
+#temperature-value {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+#save-button {
+    padding: 10px;
+    border: none;
+    background-color: #9F7AEA;
+    color: #FFFFFF;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
