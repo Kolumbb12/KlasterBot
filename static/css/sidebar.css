@@ -35,3 +35,12 @@
 .menu-item:hover, .menu-item.active {
     background-color: #9F7AEA;
 }
+
+.menu-item.logout {
+    color: #ff4d4d; /* Цвет кнопки выхода, чтобы выделить её */
+}
+
+.menu-item.logout:hover {
+    background-color: #ff3333; /* Цвет при наведении на кнопку выхода */
+    color: white;
+}

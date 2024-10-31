@@ -1,44 +1,54 @@
-/* agent_selection.css */
+.container {
+    padding: 20px;
+}
+
+.agent-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
 
 .agent-card {
     background-color: #2C2C3D;
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
     color: #FFFFFF;
-    max-width: 300px;
-    margin: 0 auto;
-    text-align: center;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.agent-card h2 {
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+
+.agent-card p {
+    margin: 5px 0;
 }
 
 .agent-avatar {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     margin-bottom: 10px;
 }
 
-.agent-status {
-    color: #FF6B6B;
-    margin-bottom: 20px;
-}
-
 .agent-actions button {
-    padding: 10px;
-    border: none;
+    padding: 8px 10px;
+    margin: 5px;
     background-color: #9F7AEA;
     color: #FFFFFF;
+    border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 10px;
 }
 
-.select-button {
-    padding: 10px;
-    border: none;
-    background-color: #805AD5;
-    color: #FFFFFF;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 20px;
+.agent-actions .active {
+    width: 100px;
+    background-color: #FF4D4D;
+}
+
+.agent-actions .inactive {
+    width: 100px;
+    background-color: #4CAF50;
 }

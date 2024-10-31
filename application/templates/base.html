@@ -1,3 +1,4 @@
+<!-- base.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -11,13 +12,18 @@
     <div class="sidebar">
         <div class="logo">KLASTERBOT</div>
         <nav class="menu">
-            <a href="{{ url_for('main.agent_selection') }}" class="menu-item">Выбор агента</a>
+            <a href="{{ url_for('main.agent_selection') }}" class="menu-item">Мои агенты</a>
+            <a href="{{ url_for('main.agent_settings') }}" class="menu-item">Создать агента</a>
             <a href="{{ url_for('main.chat') }}" class="menu-item">Чат</a>
+            <a href="{{ url_for('main.logout') }}" class="menu-item logout">Выход</a>
         </nav>
     </div>
     <div class="content">
         {% block content %}{% endblock %}
     </div>
     <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/agent_selection.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/agent_settings.js') }}"></script>
+
 </body>
 </html>
