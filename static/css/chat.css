@@ -10,11 +10,6 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
-.agent-status {
-    color: #FF6B6B;
-    margin-bottom: 20px;
-}
-
 .chat-box {
     background-color: #F5F5F5;
     border-radius: 10px;
@@ -84,4 +79,42 @@
     color: #AAAAAA;
     margin-top: 10px;
     text-align: center;
+}
+
+#agent-name {
+    margin: 0;
+}
+
+#agent-select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: #2C2C3D;
+    color: #FFFFFF;
+    border: 1px solid #9F7AEA;
+}
+
+#agent-select option:disabled {
+    color: #777;
+}
+
+#agent-select option {
+    background-color: #2C2C3D;
+    color: #FFFFFF;
+}
+
+.chat-container {
+    display: none; /* Скрыть чат по умолчанию */
+    margin-top: 20px;
+}
+
+.agent-status {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+
+.input-block {
+    margin-top: 15px;
 }

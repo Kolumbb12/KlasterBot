@@ -35,6 +35,8 @@ try:
             user_id INT NOT NULL,
             name NVARCHAR(50) NOT NULL,
             instruction TEXT,
+            start_message TEXT,
+            error_message TEXT,
             temperature DECIMAL(2, 1) DEFAULT 0.5 CHECK (temperature <= 1.0),
             max_tokens INT DEFAULT 150,
             message_buffer INT DEFAULT 0,

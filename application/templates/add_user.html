@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить пользователя{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/add_user.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Добавить пользователя</h1>
+    <form method="POST">
+        <div class="input-block">
+            <label for="username">Имя пользователя</label>
+            <input type="text" id="username" name="username" placeholder="Введите имя пользователя" required>
+        </div>
+        <div class="input-block">
+            <label for="password">Пароль</label>
+            <input type="password" id="password" name="password" placeholder="Введите пароль" required>
+        </div>
+        <div class="input-block" id="input-block-admin">
+            <input type="checkbox" name="is_admin">
+            <label for="is_admin">Администратор</label>
+        </div>
+        <button type="submit">Добавить</button>
+    </form>
+</div>
+{% endblock %}

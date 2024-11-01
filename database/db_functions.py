@@ -80,14 +80,14 @@ def select_agent_by_id(agent_id):
         connection.close()
 
 
-def insert_agent(user_id, name, instruction, temperature=0.5, max_tokens=150, message_buffer=0, accumulate_messages=False, transmit_date=False, api_key=None):
+def insert_agent(user_id, name, instruction, start_message, error_message, temperature=0.5, max_tokens=150, message_buffer=0, accumulate_messages=False, transmit_date=False, api_key=None):
     try:
         connection = create_server_connection()
         cursor = connection.cursor()
         cursor.execute(
             """INSERT INTO gpt_agents (user_id, name, instruction, temperature, max_tokens, message_buffer, accumulate_messages, transmit_date, api_key) 
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-            (user_id, name, instruction, temperature, max_tokens, message_buffer, accumulate_messages, transmit_date, api_key)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            (user_id, name, instruction, start_message, error_message, temperature, max_tokens, message_buffer, accumulate_messages, transmit_date, api_key)
         )
         connection.commit()
         print("Агент успешно добавлен.")
