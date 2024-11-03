@@ -37,7 +37,7 @@ try:
             instruction TEXT,
             start_message TEXT,
             error_message TEXT,
-            temperature DECIMAL(2, 1) DEFAULT 0.5 CHECK (temperature <= 1.0),
+            temperature DECIMAL(2, 1) DEFAULT 0.0 CHECK (temperature <= 1.0),
             max_tokens INT DEFAULT 150,
             message_buffer INT DEFAULT 0,
             accumulate_messages BOOLEAN DEFAULT FALSE,
@@ -53,19 +53,31 @@ try:
         cursor.execute(create_agents_table_query)
         print("Таблица 'agents' создана или уже существует.")
 
+        # Запрос для создания таблицы chat_types
+        create_chats_table_query = """
+            CREATE TABLE IF NOT EXISTS chat_types (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL
+        );
+        """
+        cursor.execute(create_chats_table_query)
+        print("Таблица 'chat_types' создана или уже существует.")
+
         # Запрос для создания таблицы chats
         create_chats_table_query = """
             CREATE TABLE IF NOT EXISTS chats (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
             agent_id INT NOT NULL,
+            chat_type_id INT NOT NULL,
             user_message TEXT,
             bot_response TEXT,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             response_at DATETIME DEFAULT NULL,
             is_deleted BOOLEAN DEFAULT FALSE,
             FOREIGN KEY (user_id) REFERENCES users(id),
-            FOREIGN KEY (agent_id) REFERENCES gpt_agents(id)
+            FOREIGN KEY (agent_id) REFERENCES gpt_agents(id),
+            FOREIGN KEY (chat_type_id) REFERENCES chat_types(id)
         );
         """
         cursor.execute(create_chats_table_query)

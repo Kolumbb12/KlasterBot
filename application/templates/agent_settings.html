@@ -29,8 +29,8 @@
         </div>
         <div class="input-block">
             <label for="temperature">Температура</label>
-            <input type="range" name="temperature" id="temperature" min="0" max="100" value="{{ agent.temperature * 100 if agent else 50 }}">
-            <span id="temperature-value">{{ agent.temperature * 100 if agent else 50 }}%</span>
+            <input type="range" name="temperature" id="temperature" min="0" max="100" value="{{ agent.temperature * 100 if agent else 0 }}">
+            <span id="temperature-value">{{ agent.temperature * 100 if agent else 0 }}%</span>
         </div>
         <div class="input-block">
             <label for="max-tokens">Максимальное количество токенов</label>

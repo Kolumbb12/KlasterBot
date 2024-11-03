@@ -28,10 +28,14 @@ def insert_user(username, password, is_admin=0):
         connection.commit()
         print("Пользователь успешно добавлен.")
     except Error as e:
-        print(f"Ошибка при добавлении пользователя: {e}")
+        if "Duplicate entry" in str(e):
+            raise ValueError("Пользователь с таким именем уже существует.")
+        else:
+            raise e  # Пробрасываем другие ошибки
     finally:
         cursor.close()
         connection.close()
+
 
 
 def update_user_password(user_id, new_password):
@@ -185,19 +189,47 @@ def select_chat_by_id(chat_id):
         cursor.close()
         connection.close()
 
-
-def insert_chat(user_id, agent_id, user_message, bot_response=None):
+def get_chat_history_by_user_and_agent(user_id, agent_id, chat_type_id):
     try:
         connection = create_server_connection()
-        cursor = connection.cursor()
-        cursor.execute(
-            "INSERT INTO chats (user_id, agent_id, user_message, bot_response) VALUES (%s, %s, %s, %s)",
-            (user_id, agent_id, user_message, bot_response)
-        )
-        connection.commit()
-        print("Чат добавлен.")
+        cursor = connection.cursor(dictionary=True)
+        query = """
+        SELECT user_message, bot_response 
+        FROM chats
+        WHERE user_id = %s AND agent_id = %s AND chat_type_id = %s AND is_deleted = FALSE
+        ORDER BY created_at
+        """
+        cursor.execute(query, (user_id, agent_id, chat_type_id))
+        history = cursor.fetchall()
+
+        # Проверяем, что история не пуста и форматируем для передачи в шаблон
+        conversation_history = []
+        for record in history:
+            if record['user_message']:
+                conversation_history.append({"role": "user", "content": record['user_message']})
+            if record['bot_response']:
+                conversation_history.append({"role": "assistant", "content": record['bot_response']})
+        return conversation_history
+
     except Error as e:
-        print(f"Ошибка при добавлении чата: {e}")
+        print(f"Ошибка при чтении истории чата: {e}")
+    finally:
+        cursor.close()
+        connection.close()
+
+
+def insert_chat_message(user_id, agent_id, chat_type_id, user_message, bot_response):
+    try:
+        connection = create_server_connection()
+        cursor = connection.cursor(dictionary=True)
+        query = """
+        INSERT INTO chats (user_id, agent_id, chat_type_id, user_message, bot_response)
+        VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (user_id, agent_id, chat_type_id, user_message, bot_response))
+        connection.commit()
+    except Error as e:
+        print(f"Ошибка при записи истории чата: {e}")
     finally:
         cursor.close()
         connection.close()

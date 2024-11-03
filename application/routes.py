@@ -1,6 +1,7 @@
 from database.db_functions import *
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, jsonify
 from database.db_connection import create_server_connection
+from web_clients.gpt_api import generate_response
 
 
 main = Blueprint('main', __name__)
@@ -116,6 +117,7 @@ def agent_settings(agent_id=None):
         return redirect(url_for('main.agent_selection'))
     return render_template('agent_settings.html', agent=agent, page_title=page_title)
 
+
 @main.route('/toggle_agent_status/<int:agent_id>')
 def toggle_agent_status(agent_id):
     # Получаем текущий статус агента
@@ -132,17 +134,6 @@ def toggle_agent_status(agent_id):
     return redirect(url_for('main.agent_selection'))
 
 
-@main.route('/chat')
-def chat():
-    if 'user_id' not in session:
-        flash('Пожалуйста, авторизуйтесь', 'error')
-        return redirect(url_for('main.login'))
-
-    user_id = session['user_id']
-    agents = select_all_agents_by_user_id(user_id)
-    return render_template('chat.html', agents=agents)
-
-
 @main.route('/get_agent_data/<int:agent_id>', methods=['GET'])
 def get_agent_data(agent_id):
     agent = select_agent_by_id(agent_id)
@@ -157,7 +148,6 @@ def get_agent_data(agent_id):
     return jsonify({"error": "Агент не найден"}), 404
 
 
-
 @main.route('/add_user', methods=['GET', 'POST'])
 def add_user():
     if not session.get('is_admin'):
@@ -170,8 +160,14 @@ def add_user():
         is_admin = 'is_admin' in request.form
 
         if username and password:
-            insert_user(username=username, password=password, is_admin=int(is_admin))
-            flash("Пользователь успешно добавлен", "success")
+            try:
+                insert_user(username=username, password=password, is_admin=int(is_admin))
+                flash("Пользователь успешно добавлен", "success")
+            except Exception as e:
+                if "Duplicate entry" in str(e):
+                    flash("Пользователь с таким именем уже существует", "error")
+                else:
+                    flash(f"Ошибка при добавлении пользователя: {e}", "error")
             return redirect(url_for('main.agent_selection'))
         else:
             flash("Заполните все поля", "error")
@@ -186,4 +182,35 @@ def logout():
     return redirect(url_for('main.login'))  # Перенаправление на страницу входа
 
 
+@main.route('/chat', methods=['GET', 'POST'])
+def chat():
+    if 'user_id' not in session:
+        flash('Пожалуйста, авторизуйтесь', 'error')
+        return redirect(url_for('main.login'))
 
+    user_id = session['user_id']
+
+    if request.method == 'GET':
+        agent_id = request.args.get('agent_id', type=int, default=1)  # Определение agent_id из параметров запроса
+        agents = select_all_agents_by_user_id(user_id)
+        chat_history = get_chat_history_by_user_and_agent(user_id=user_id, agent_id=agent_id, chat_type_id=1) or []  # Убедитесь, что chat_history не None
+        return render_template('chat.html', agents=agents, chat_history=chat_history, selected_agent_id=agent_id)
+
+    elif request.method == 'POST':
+        data = request.get_json()
+        agent_id = data.get('agent_id')
+        chat_type_id = data.get('chat_type_id')
+        user_input = data.get('message')
+        if not agent_id or not user_input:
+            return jsonify({"error": "Требуются ID агента и сообщение"}), 400
+
+        try:
+            # Получаем и обновляем историю чата из базы данных
+            chat_history = get_chat_history_by_user_and_agent(user_id, agent_id, chat_type_id) or []
+            response = generate_response(agent_id, user_input, chat_history)
+            # Сохраняем сообщение пользователя и ответ бота в базу данных
+            insert_chat_message(user_id, agent_id, chat_type_id, user_input, response)
+            return jsonify({"response": response})
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500

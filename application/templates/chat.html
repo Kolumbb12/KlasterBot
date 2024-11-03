@@ -35,14 +35,21 @@
     <p class="agent-status"></p>
 
     <!-- Окно для сообщений -->
-    <div id="chat-box" class="chat-box"></div>
+    <div id="chat-box">
+        {% for message in chat_history %}
+            {% if message.role == 'user' %}
+                <div class="message user-message">{{ message.content }}</div>
+            {% elif message.role == 'assistant' %}
+                <div class="message bot-message">{{ message.content }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
 
     <!-- Поле для ввода сообщения -->
     <div class="chat-input-area">
-        <label for="chat-input">База знаний:</label>
+        <button id="clear-button">Очистить чат</button>
         <textarea id="chat-input" placeholder="Введите свой запрос..."></textarea>
         <button id="send-button">➤</button>
-        <button id="clear-button">Очистить чат</button>
     </div>
 </div>
 {% endblock %}

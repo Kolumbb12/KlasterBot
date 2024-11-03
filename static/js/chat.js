@@ -4,7 +4,9 @@ document.getElementById('clear-button').addEventListener('click', clearChat);
 document.getElementById('agent-select').addEventListener('change', function() {
     const agentId = this.value;
     if (agentId) {
-        // AJAX-запрос для получения данных агента
+        // Обновляем URL с параметром agent_id при выборе нового агента
+        window.history.pushState({}, '', `/chat?agent_id=${agentId}`);
+
         fetch(`/get_agent_data/${agentId}`)
             .then(response => response.json())
             .then(data => {
@@ -13,23 +15,24 @@ document.getElementById('agent-select').addEventListener('change', function() {
                     return;
                 }
 
-                // Устанавливаем начальные сообщения и статус агента
                 document.getElementById('start-message').innerText = data.start_message;
                 document.getElementById('error-message').innerText = data.error_message;
                 document.getElementById('agent-name').innerText = `Агент: ${data.name}`;
                 document.querySelector('.agent-status').innerText = `Агент ${data.is_active ? 'включен' : 'выключен'}`;
 
-                // Показываем контейнер чата и стартовое сообщение
                 document.getElementById('agent-message').style.display = 'block';
                 document.querySelector('.chat-container').style.display = 'block';
 
-                // Очищаем старые сообщения и добавляем стартовое сообщение в чат
                 const chatBox = document.getElementById('chat-box');
-                chatBox.innerHTML = ""; // Очистка чата
+
+                // Отображаем стартовое сообщение
                 const startMessage = document.createElement('div');
                 startMessage.classList.add('message', 'bot-message');
                 startMessage.innerHTML = `<span>${data.start_message}</span>`;
-                chatBox.appendChild(startMessage);
+                chatBox.prepend(startMessage);
+
+                // Загружаем историю чата после стартового сообщения
+                loadChatHistory(agentId);
             })
             .catch(error => console.error('Ошибка:', error));
     } else {
@@ -38,29 +41,99 @@ document.getElementById('agent-select').addEventListener('change', function() {
     }
 });
 
+function loadChatHistory(agentId) {
+    // AJAX-запрос для получения истории чата
+    fetch(`/chat_history?agent_id=${agentId}`)
+        .then(response => response.json())
+        .then(data => {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = ''; // Очищаем окно чата
+
+            data.chat_history.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', message.role === 'user' ? 'user-message' : 'bot-message');
+                messageDiv.textContent = message.content;
+                chatBox.appendChild(messageDiv);
+            });
+            // Прокрутка чата вниз
+            chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(error => console.error('Ошибка при загрузке истории чата:', error));
+}
+
 function sendMessage() {
+    const agentId = document.getElementById('agent-select').value;
     const chatInput = document.getElementById('chat-input');
     const messageText = chatInput.value.trim();
-    if (messageText === "") return;
+
+    if (!agentId || messageText === "") return;
 
     const chatBox = document.getElementById('chat-box');
-
-    // Добавляем сообщение пользователя
     const userMessage = document.createElement('div');
     userMessage.classList.add('message', 'user-message');
     userMessage.textContent = messageText;
     chatBox.appendChild(userMessage);
 
-    // Очищаем поле ввода
-    chatInput.value = "";
+    userMessage.style.opacity = 0;
+    setTimeout(() => {
+        userMessage.style.transition = "opacity 0.5s";
+        userMessage.style.opacity = 1;
+    }, 100);
 
-    // Прокручиваем вниз
+    chatInput.value = "";
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    // Здесь можно добавить логику отправки сообщения на сервер и получения ответа от бота
+    fetch('/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ agent_id: agentId, chat_type_id: 1, message: messageText })  // Передаем chat_type_id
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            console.error(data.error);
+            alert("Ошибка: " + data.error);
+        } else {
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message', 'bot-message');
+            botMessage.textContent = data.response;
+            chatBox.appendChild(botMessage);
+
+            botMessage.style.opacity = 0;
+            setTimeout(() => {
+                botMessage.style.transition = "opacity 0.5s";
+                botMessage.style.opacity = 1;
+            }, 100);
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    })
+    .catch(error => console.error('Ошибка:', error));
 }
 
 function clearChat() {
     const chatBox = document.getElementById('chat-box');
     chatBox.innerHTML = "";
 }
+
+// Получаем элементы
+const chatInput = document.getElementById('chat-input');
+const sendButton = document.getElementById('send-button');
+
+// Добавляем обработчик события для нажатия клавиши в поле ввода
+chatInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Предотвращаем стандартное поведение Enter (новая строка)
+        sendButton.click(); // Программно нажимаем кнопку отправки
+    }
+});
+
+// Загрузка истории чата при загрузке страницы с выбранным агентом по умолчанию
+window.addEventListener('load', () => {
+    const agentId = document.getElementById('agent-select').value;
+    if (agentId) {
+        loadChatHistory(agentId);
+    }
+});
