@@ -214,3 +214,38 @@ def chat():
 
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
+
+@main.route('/chat_history', methods=['GET'])
+def chat_history():
+    agent_id = request.args.get('agent_id')
+    if not agent_id:
+        return jsonify({"error": "ID агента не указан"}), 400
+    try:
+        user_id = session['user_id']
+        # Логика получения истории чата из базы данных
+        chat_history = get_chat_history_by_user_and_agent(user_id, agent_id, 1)
+        return jsonify({"chat_history": chat_history}), 200
+    except Exception as e:
+        print(f"Ошибка при получении истории чата: {e}")
+        return jsonify({"error": "Ошибка при получении истории чата"}), 500
+
+
+@main.route('/clear_chat', methods=['POST'])
+def clear_chat():
+    if 'user_id' not in session:
+        return jsonify({"error": "Необходима авторизация"}), 403
+
+    user_id = session['user_id']
+    data = request.get_json()
+    agent_id = data.get('agent_id')
+    chat_type_id = data.get('chat_type_id')
+
+    if not agent_id or not chat_type_id:
+        return jsonify({"error": "Требуются ID агента и тип чата"}), 400
+
+    try:
+        delete_chat_history(user_id=user_id, agent_id=agent_id, chat_type_id=chat_type_id)
+        return jsonify({"success": "Чат успешно очищен"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

@@ -23,16 +23,8 @@ document.getElementById('agent-select').addEventListener('change', function() {
                 document.getElementById('agent-message').style.display = 'block';
                 document.querySelector('.chat-container').style.display = 'block';
 
-                const chatBox = document.getElementById('chat-box');
-
-                // Отображаем стартовое сообщение
-                const startMessage = document.createElement('div');
-                startMessage.classList.add('message', 'bot-message');
-                startMessage.innerHTML = `<span>${data.start_message}</span>`;
-                chatBox.prepend(startMessage);
-
                 // Загружаем историю чата после стартового сообщения
-                loadChatHistory(agentId);
+                loadChatHistory(agentId, data.start_message);
             })
             .catch(error => console.error('Ошибка:', error));
     } else {
@@ -41,13 +33,19 @@ document.getElementById('agent-select').addEventListener('change', function() {
     }
 });
 
-function loadChatHistory(agentId) {
+function loadChatHistory(agentId, startMessageText) {
     // AJAX-запрос для получения истории чата
     fetch(`/chat_history?agent_id=${agentId}`)
         .then(response => response.json())
         .then(data => {
             const chatBox = document.getElementById('chat-box');
             chatBox.innerHTML = ''; // Очищаем окно чата
+
+            // Добавляем стартовое сообщение только если история пуста
+            const startMessageDiv = document.createElement('div');
+            startMessageDiv.classList.add('message', 'bot-message', 'start-message');
+            startMessageDiv.innerHTML = `<span>${startMessageText}</span>`;
+            chatBox.appendChild(startMessageDiv);
 
             data.chat_history.forEach(message => {
                 const messageDiv = document.createElement('div');
@@ -114,8 +112,32 @@ function sendMessage() {
 }
 
 function clearChat() {
-    const chatBox = document.getElementById('chat-box');
-    chatBox.innerHTML = "";
+    const agentId = document.getElementById('agent-select').value;
+    if (!agentId) {
+        alert("Пожалуйста, выберите агента перед очисткой чата.");
+        return;
+    }
+
+    fetch('/clear_chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ agent_id: agentId, chat_type_id: 1 }) // Задаем тип чата (1 - для тестового)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            console.error(data.error);
+            alert("Ошибка: " + data.error);
+        } else {
+            // Очищаем окно чата после успешного удаления
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            alert(data.success);
+        }
+    })
+    .catch(error => console.error('Ошибка:', error));
 }
 
 // Получаем элементы

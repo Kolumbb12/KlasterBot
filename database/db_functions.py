@@ -37,7 +37,6 @@ def insert_user(username, password, is_admin=0):
         connection.close()
 
 
-
 def update_user_password(user_id, new_password):
     try:
         connection = create_server_connection()
@@ -89,7 +88,7 @@ def insert_agent(user_id, name, instruction, start_message, error_message, tempe
         connection = create_server_connection()
         cursor = connection.cursor()
         cursor.execute(
-            """INSERT INTO gpt_agents (user_id, name, instruction, temperature, max_tokens, message_buffer, accumulate_messages, transmit_date, api_key) 
+            """INSERT INTO gpt_agents (user_id, name, instruction, start_message, error_message, temperature, max_tokens, message_buffer, accumulate_messages, transmit_date, api_key) 
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
             (user_id, name, instruction, start_message, error_message, temperature, max_tokens, message_buffer, accumulate_messages, transmit_date, api_key)
         )
@@ -235,15 +234,19 @@ def insert_chat_message(user_id, agent_id, chat_type_id, user_message, bot_respo
         connection.close()
 
 
-def delete_chat(chat_id):
+def delete_chat_history(user_id, agent_id, chat_type_id):
     try:
         connection = create_server_connection()
         cursor = connection.cursor()
-        cursor.execute("UPDATE chats SET is_deleted = TRUE WHERE id = %s", (chat_id,))
+        cursor.execute("""
+            UPDATE chats 
+            SET is_deleted = TRUE 
+            WHERE user_id = %s AND agent_id = %s AND chat_type_id = %s
+        """, (user_id, agent_id, chat_type_id))
         connection.commit()
-        print("Чат удален.")
+        print("История чата успешно удалена.")
     except Error as e:
-        print(f"Ошибка при удалении чата: {e}")
+        print(f"Ошибка при удалении истории чата: {e}")
     finally:
         cursor.close()
         connection.close()
