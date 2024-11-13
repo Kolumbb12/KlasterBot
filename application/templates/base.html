@@ -6,6 +6,7 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile.css') }}">
     {% block extra_styles %}{% endblock %}
 </head>
 <body>
@@ -15,8 +16,10 @@
             <a href="{{ url_for('main.agent_selection') }}" class="menu-item">Мои агенты</a>
             <a href="{{ url_for('main.agent_settings') }}" class="menu-item">Создать агента</a>
             <a href="{{ url_for('main.chat') }}" class="menu-item">Чат</a>
+            <a href="{{ url_for('main.user_profile') }}" class="menu-item">Профиль</a>
             {% if session.get('is_admin') %}
                 <a href="{{ url_for('main.add_user') }}" class="menu-item">Добавить пользователя</a>
+                <a href="{{ url_for('main.user_list') }}" class="menu-item">Пользователи</a>
             {% endif %}
             <a href="{{ url_for('main.logout') }}" class="menu-item logout">Выход</a>
         </nav>
@@ -38,5 +41,6 @@
     <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
     <script src="{{ url_for('static', filename='js/agent_selection.js') }}"></script>
     <script src="{{ url_for('static', filename='js/agent_settings.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/change_password.js') }}"></script>
 </body>
 </html>

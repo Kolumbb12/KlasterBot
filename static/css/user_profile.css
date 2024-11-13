@@ -1,0 +1,28 @@
+/* user_profile.css */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0 10px;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 8px 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}

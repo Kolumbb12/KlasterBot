@@ -1,0 +1,37 @@
+<!-- user_list.html -->
+{% extends "base.html" %}
+
+{% block title %}Список пользователей{% endblock %}
+
+{% block content %}
+<h1>Список пользователей</h1>
+<form method="get" action="{{ url_for('main.user_profile') }}">
+    <div class="form-group">
+        <label for="user_select">Выберите пользователя</label>
+        <select name="user_id" id="user_select" onchange="this.form.submit()">
+            <option value="">-- Выберите пользователя --</option>
+            {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+<style>
+    #user_select {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        background-color: #2C2C3D;
+        color: #FFFFFF;
+        border: 1px solid #9F7AEA;
+    }
+
+    #user_select option {
+        background-color: #2C2C3D;
+        color: #FFFFFF;
+    }
+</style>
+
+{% endblock %}

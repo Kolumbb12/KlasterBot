@@ -1,10 +1,10 @@
 from mysql.connector import Error
-from db_connection import create_server_connection
+from db_connection import db_instance
 
 
 try:
     # Подключение к базе данных
-    connection = create_server_connection()
+    connection = db_instance.get_connection()
 
     if connection.is_connected():
         print("Подключение к базе данных успешно")
@@ -18,6 +18,9 @@ try:
             id INT AUTO_INCREMENT PRIMARY KEY,
             username VARCHAR(50) NOT NULL,
             password VARCHAR(255) NOT NULL,
+            full_name VARCHAR(100) NULL,
+            email VARCHAR(100) NULL,
+            phone_number VARCHAR(15) NULL,
             is_admin INT NOT NULL DEFAULT 0,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -88,5 +91,4 @@ except Error as e:
 finally:
     if connection.is_connected():
         cursor.close()
-        connection.close()
         print("Подключение к базе данных закрыто.")

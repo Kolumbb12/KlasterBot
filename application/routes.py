@@ -1,6 +1,6 @@
 from database.db_functions import *
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, jsonify
-from database.db_connection import create_server_connection
+from database.db_connection import db_instance
 from web_clients.gpt_api import generate_response
 
 
@@ -13,17 +13,19 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        # Подключение к базе данных и поиск пользователя
-        connection = create_server_connection()
-        cursor = connection.cursor(dictionary=True)
+        try:
+            # Подключение к базе данных и поиск пользователя
+            connection = db_instance.get_connection()
+            cursor = connection.cursor(dictionary=True)
 
-        # Перенести в отдельную функцию
-        query = "SELECT * FROM users WHERE username = %s"
-        cursor.execute(query, (username,))
-        user = cursor.fetchone()
+            query = "SELECT * FROM users WHERE username = %s"
+            cursor.execute(query, (username,))
+            user = cursor.fetchone()
 
-        cursor.close()
-        connection.close()
+        except Error as e:
+            print(f"Ошибка при записи истории чата: {e}")
+        finally:
+            cursor.close()
 
         # Проверка существования пользователя и соответствия пароля
         if user and user['password'] == password:  # Упростил проверку пароля без хеширования
@@ -38,10 +40,112 @@ def login():
     return render_template('login.html')
 
 
+@main.route('/logout')
+def logout():
+    if 'user_id' not in session:
+        flash('Пожалуйста, авторизуйтесь', 'error')
+        return redirect(url_for('main.login'))
+
+    session.clear()  # Очистка сессии
+    flash("Вы вышли из аккаунта.", "info")
+    return redirect(url_for('main.login'))  # Перенаправление на страницу входа
+
+
+@main.route('/add_user', methods=['GET', 'POST'])
+def add_user():
+    if 'user_id' not in session:
+        flash('Пожалуйста, авторизуйтесь', 'error')
+        return redirect(url_for('main.login'))
+
+    if not session.get('is_admin'):
+        flash("У вас нет прав доступа", "error")
+        return redirect(url_for('main.agent_selection'))
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        is_admin = 'is_admin' in request.form
+
+        if username and password:
+            try:
+                insert_user(username=username, password=password, is_admin=int(is_admin))
+                flash("Пользователь успешно добавлен", "success")
+            except Exception as e:
+                if "Duplicate entry" in str(e):
+                    flash("Пользователь с таким именем уже существует", "error")
+                else:
+                    flash(f"Ошибка при добавлении пользователя: {e}", "error")
+            return redirect(url_for('main.agent_selection'))
+        else:
+            flash("Заполните все поля", "error")
+
+    return render_template('add_user.html')
+
+
+@main.route('/user_profile', methods=['GET', 'POST'])
+def user_profile():
+    if 'user_id' not in session:
+        flash("Пожалуйста, авторизуйтесь", "error")
+        return redirect(url_for('main.login'))
+
+    user_id = request.args.get('user_id') or request.form.get('user_id') or session['user_id']
+    user = select_user_by_id(user_id)
+
+    if request.method == 'POST':
+
+        settings = {
+            'full_name': request.form.get('full_name') or None,
+            'email': request.form.get('email') or None,
+            'phone_number': request.form.get('phone_number') or None,
+            'password': request.form.get('password') or None
+        }
+        try:
+            update_user_profile(user_id, settings)
+            flash("Профиль успешно обновлен", "success")
+            return redirect(url_for('main.user_profile', user_id=user_id))
+        except Exception as e:
+            flash(f"Ошибка: {e}", "error")
+
+    return render_template('user_profile.html', user=user, user_id=user_id)
+
+
+@main.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if 'user_id' not in session:
+        flash("Пожалуйста, авторизуйтесь", "error")
+        return redirect(url_for('main.login'))
+
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+
+        if not new_password:
+            flash("Пароль не может быть пустым", "error")
+            return redirect(url_for('main.change_password'))
+
+        user_id = session['user_id']
+        update_user_password(user_id, new_password)
+        flash("Пароль успешно изменен", "success")
+        return redirect(url_for('main.user_profile'))
+
+    return render_template('change_password.html')
+
+
+@main.route('/user_list')
+def user_list():
+    if not session.get('is_admin'):
+        flash("У вас нет прав доступа", "error")
+        return redirect(url_for('main.agent_selection'))
+
+    users = get_all_users()  # Функция для получения всех пользователей
+    return render_template('user_list.html', users=users)
+
+
 @main.route('/agent_selection')
 def agent_selection():
     if 'user_id' not in session:
+        flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('main.login'))
+
     user_id = session['user_id']
     agents = select_all_agents_by_user_id(user_id)
     return render_template('agent_selection.html', agents=agents)
@@ -120,6 +224,10 @@ def agent_settings(agent_id=None):
 
 @main.route('/toggle_agent_status/<int:agent_id>')
 def toggle_agent_status(agent_id):
+    if 'user_id' not in session:
+        flash('Пожалуйста, авторизуйтесь', 'error')
+        return redirect(url_for('main.login'))
+
     # Получаем текущий статус агента
     agent = select_agent_by_id(agent_id)
 
@@ -136,6 +244,10 @@ def toggle_agent_status(agent_id):
 
 @main.route('/get_agent_data/<int:agent_id>', methods=['GET'])
 def get_agent_data(agent_id):
+    if 'user_id' not in session:
+        flash('Пожалуйста, авторизуйтесь', 'error')
+        return redirect(url_for('main.login'))
+
     agent = select_agent_by_id(agent_id)
     if agent:
         data = {
@@ -146,40 +258,6 @@ def get_agent_data(agent_id):
         }
         return jsonify(data)
     return jsonify({"error": "Агент не найден"}), 404
-
-
-@main.route('/add_user', methods=['GET', 'POST'])
-def add_user():
-    if not session.get('is_admin'):
-        flash("У вас нет прав доступа", "error")
-        return redirect(url_for('main.agent_selection'))
-
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        is_admin = 'is_admin' in request.form
-
-        if username and password:
-            try:
-                insert_user(username=username, password=password, is_admin=int(is_admin))
-                flash("Пользователь успешно добавлен", "success")
-            except Exception as e:
-                if "Duplicate entry" in str(e):
-                    flash("Пользователь с таким именем уже существует", "error")
-                else:
-                    flash(f"Ошибка при добавлении пользователя: {e}", "error")
-            return redirect(url_for('main.agent_selection'))
-        else:
-            flash("Заполните все поля", "error")
-
-    return render_template('add_user.html')
-
-
-@main.route('/logout')
-def logout():
-    session.clear()  # Очистка сессии
-    flash("Вы вышли из аккаунта.", "info")
-    return redirect(url_for('main.login'))  # Перенаправление на страницу входа
 
 
 @main.route('/chat', methods=['GET', 'POST'])
@@ -193,8 +271,8 @@ def chat():
     if request.method == 'GET':
         agent_id = request.args.get('agent_id', type=int, default=1)  # Определение agent_id из параметров запроса
         agents = select_all_agents_by_user_id(user_id)
-        chat_history = get_chat_history_by_user_and_agent(user_id=user_id, agent_id=agent_id, chat_type_id=1) or []  # Убедитесь, что chat_history не None
-        return render_template('chat.html', agents=agents, chat_history=chat_history, selected_agent_id=agent_id)
+        my_chat_history = get_chat_history_by_user_and_agent(user_id=user_id, agent_id=agent_id, chat_type_id=1) or []  # Убедитесь, что chat_history не None
+        return render_template('chat.html', agents=agents, chat_history=my_chat_history, selected_agent_id=agent_id)
 
     elif request.method == 'POST':
         data = request.get_json()
@@ -206,8 +284,8 @@ def chat():
 
         try:
             # Получаем и обновляем историю чата из базы данных
-            chat_history = get_chat_history_by_user_and_agent(user_id, agent_id, chat_type_id) or []
-            response = generate_response(agent_id, user_input, chat_history)
+            my_chat_history = get_chat_history_by_user_and_agent(user_id, agent_id, chat_type_id) or []
+            response = generate_response(agent_id, user_input, my_chat_history)
             # Сохраняем сообщение пользователя и ответ бота в базу данных
             insert_chat_message(user_id, agent_id, chat_type_id, user_input, response)
             return jsonify({"response": response})
@@ -218,14 +296,18 @@ def chat():
 
 @main.route('/chat_history', methods=['GET'])
 def chat_history():
+    if 'user_id' not in session:
+        flash('Пожалуйста, авторизуйтесь', 'error')
+        return redirect(url_for('main.login'))
+
     agent_id = request.args.get('agent_id')
     if not agent_id:
         return jsonify({"error": "ID агента не указан"}), 400
     try:
         user_id = session['user_id']
         # Логика получения истории чата из базы данных
-        chat_history = get_chat_history_by_user_and_agent(user_id, agent_id, 1)
-        return jsonify({"chat_history": chat_history}), 200
+        my_chat_history = get_chat_history_by_user_and_agent(user_id, agent_id, 1)
+        return jsonify({"chat_history": my_chat_history}), 200
     except Exception as e:
         print(f"Ошибка при получении истории чата: {e}")
         return jsonify({"error": "Ошибка при получении истории чата"}), 500
@@ -234,7 +316,8 @@ def chat_history():
 @main.route('/clear_chat', methods=['POST'])
 def clear_chat():
     if 'user_id' not in session:
-        return jsonify({"error": "Необходима авторизация"}), 403
+        flash('Пожалуйста, авторизуйтесь', 'error')
+        return redirect(url_for('main.login'))
 
     user_id = session['user_id']
     data = request.get_json()
