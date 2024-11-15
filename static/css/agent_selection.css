@@ -1,13 +1,18 @@
+/* agent_selections.css */
+
+/* Основной контейнер для работы с агентами */
 .container {
     padding: 20px;
 }
 
+/* Сетка для отображения карточек агентов */
 .agent-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
 }
 
+/* Карточка агента */
 .agent-card {
     background-color: #2C2C3D;
     padding: 15px;
@@ -17,15 +22,18 @@
     text-align: center;
 }
 
+/* Заголовок в карточке агента */
 .agent-card h2 {
     font-size: 1.2em;
     margin: 10px 0;
 }
 
+/* Параграф в карточке агента */
 .agent-card p {
     margin: 5px 0;
 }
 
+/* Аватарка агента */
 .agent-avatar {
     width: 80px;
     height: 80px;
@@ -33,6 +41,7 @@
     margin-bottom: 10px;
 }
 
+/* Кнопки действий внутри карточки агента */
 .agent-actions button {
     padding: 8px 10px;
     margin: 5px;
@@ -43,11 +52,13 @@
     cursor: pointer;
 }
 
+/* Кнопка для активации агента */
 .agent-actions .active {
     width: 100px;
     background-color: #FF4D4D;
 }
 
+/* Кнопка для деактивации агента */
 .agent-actions .inactive {
     width: 100px;
     background-color: #4CAF50;

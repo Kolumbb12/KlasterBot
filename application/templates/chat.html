@@ -1,3 +1,11 @@
+<!--
+chat.html
+Шаблон HTML для страницы чата.
+Этот файл предоставляет интерфейс для взаимодействия пользователя с выбранным агентом.
+Содержит выпадающий список для выбора активного агента, окно для отображения истории сообщений,
+и поле для ввода сообщений с кнопкой для отправки.
+-->
+
 {% extends "base.html" %}
 
 {% block title %}Чат{% endblock %}
@@ -7,6 +15,7 @@
 {% endblock %}
 
 {% block content %}
+<!-- Блок выбора агента -->
 <div class="input-block">
     <label class="label-agent-select" for="agent-select">Выберите агента:</label>
     <select id="agent-select" name="agent">
@@ -25,16 +34,18 @@
     </select>
 </div>
 
+<!-- Блок сообщений агента -->
 <div id="agent-message" style="display: none;">
-    <p id="start-message"style="display: none;"></p>
+    <p id="start-message" style="display: none;"></p>
     <p id="error-message" style="display: none;"></p>
 </div>
 
+<!-- Контейнер для чата -->
 <div class="chat-container" style="display: none;">
     <h2 id="agent-name"></h2>
     <p class="agent-status"></p>
 
-    <!-- Окно для сообщений -->
+    <!-- Окно для отображения истории сообщений -->
     <div id="chat-box">
         {% for message in chat_history %}
             {% if message.role == 'user' %}
@@ -45,9 +56,10 @@
         {% endfor %}
     </div>
 
-    <!-- Поле для ввода сообщения -->
+    <!-- Поле для ввода нового сообщения -->
     <div class="chat-input-area">
         <button id="clear-button">Очистить чат</button>
+        <label for="chat-input"></label>
         <textarea id="chat-input" placeholder="Введите свой запрос..."></textarea>
         <button id="send-button">➤</button>
     </div>

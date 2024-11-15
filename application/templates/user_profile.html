@@ -1,33 +1,57 @@
-<!-- user_profile.html -->
+<!--
+user_profile.html
+Шаблон HTML для отображения и редактирования профиля пользователя.
+Позволяет пользователю просматривать и изменять свои данные, такие как полное имя, электронная почта и телефон.
+Смена пароля осуществляется отдельной кнопкой, которая перенаправляет на страницу смены пароля.
+-->
+
 {% extends "base.html" %}
 
 {% block title %}Профиль пользователя{% endblock %}
 
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile.css') }}">
+{% endblock %}
+
+
 {% block content %}
 <h1>Профиль пользователя</h1>
-<form method="post" action="{{ url_for('main.user_profile', user_id=user.id) }}">
+<form method="post" action="{{ url_for('user_bp.user_profile', user_id=user.id) }}">
+    <!-- Скрытое поле для передачи ID пользователя -->
     <input type="hidden" name="user_id" value="{{ user.id }}">
+
+    <!-- Поле для отображения имени пользователя (только для чтения) -->
     <div class="form-group">
         <label for="username">Имя пользователя</label>
         <input type="text" id="username" name="username" value="{{ user.username }}" readonly>
     </div>
+
+    <!-- Поле для редактирования полного имени -->
     <div class="form-group">
         <label for="full_name">Полное имя</label>
         <input type="text" name="full_name" id="full_name" value="{{ user.full_name if user.full_name else "" }}" placeholder="Иванов Иван Иванович">
     </div>
+
+    <!-- Поле для редактирования электронной почты -->
     <div class="form-group">
         <label for="email">Электронная почта</label>
         <input type="email" name="email" id="email" value="{{ user.email if user.email else "" }}" placeholder="example@gmail.com">
     </div>
+
+    <!-- Поле для редактирования номера телефона -->
     <div class="form-group">
         <label for="phone_number">Телефон</label>
         <input type="tel" name="phone_number" id="phone_number" value="{{ user.phone_number if user.phone_number else "" }}" placeholder="+7 ### ### ## ##">
     </div>
+
+    <!-- Поле для отображения пароля (только для чтения) и кнопка для смены пароля -->
     <div class="form-group">
         <label for="password">Пароль</label>
         <input type="password" id="password" name="password" value="{{ user.password }}" readonly>
-        <button type="button" onclick="window.location.href='{{ url_for('main.change_password') }}'">Сменить пароль</button>
+        <button type="button" onclick="window.location.href='{{ url_for('user_bp.change_password') }}'">Сменить пароль</button>
     </div>
+
+    <!-- Кнопка для сохранения изменений профиля -->
     <button type="submit">Сохранить изменения</button>
 </form>
 {% endblock %}

@@ -1,30 +1,44 @@
-<!-- base.html -->
+<!--
+base.html
+Главный шаблон HTML для приложения, служащий основой для всех страниц.
+Он содержит боковое меню навигации, место для контента страницы и подключение основных CSS и JavaScript файлов.
+Использует механизм шаблонов Jinja2 для динамической вставки блоков контента и подключения CSS и JavaScript.
+-->
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    <!-- Подключение основных CSS файлов для всего приложения -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile.css') }}">
+
+    <!-- Блок для добавления дополнительных стилей на страницах, которые наследуют этот шаблон -->
     {% block extra_styles %}{% endblock %}
 </head>
 <body>
+    <!-- Боковая панель навигации -->
     <div class="sidebar">
         <div class="logo">KLASTERBOT</div>
         <nav class="menu">
-            <a href="{{ url_for('main.agent_selection') }}" class="menu-item">Мои агенты</a>
-            <a href="{{ url_for('main.agent_settings') }}" class="menu-item">Создать агента</a>
-            <a href="{{ url_for('main.chat') }}" class="menu-item">Чат</a>
-            <a href="{{ url_for('main.user_profile') }}" class="menu-item">Профиль</a>
+            <a href="{{ url_for('agent_bp.agent_selection') }}" class="menu-item">Мои агенты</a>
+            <a href="{{ url_for('agent_bp.agent_settings') }}" class="menu-item">Создать агента</a>
+            <a href="{{ url_for('chat_bp.chat') }}" class="menu-item">Чат</a>
+            <a href="{{ url_for('user_bp.user_profile') }}" class="menu-item">Профиль</a>
             {% if session.get('is_admin') %}
-                <a href="{{ url_for('main.add_user') }}" class="menu-item">Добавить пользователя</a>
-                <a href="{{ url_for('main.user_list') }}" class="menu-item">Пользователи</a>
+                <!-- Доступ к этим пунктам меню имеет только администратор -->
+                <a href="{{ url_for('user_bp.add_user') }}" class="menu-item">Добавить пользователя</a>
+                <a href="{{ url_for('user_bp.user_list') }}" class="menu-item">Пользователи</a>
             {% endif %}
-            <a href="{{ url_for('main.logout') }}" class="menu-item logout">Выход</a>
+            <a href="{{ url_for('user_bp.logout') }}" class="menu-item logout">Выход</a>
         </nav>
     </div>
+
+    <!-- Основное содержимое страницы -->
     <div class="content">
+        <!-- Обработка flash-сообщений для отображения ошибок или успехов -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="flash-messages">
@@ -36,10 +50,13 @@
                 </div>
             {% endif %}
         {% endwith %}
+
+        <!-- Блок для основного контента, который будет заполнен на страницах, использующих этот шаблон -->
         {% block content %}{% endblock %}
     </div>
+
+    <!-- Подключение основных JavaScript файлов для функциональности -->
     <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/agent_selection.js') }}"></script>
     <script src="{{ url_for('static', filename='js/agent_settings.js') }}"></script>
     <script src="{{ url_for('static', filename='js/change_password.js') }}"></script>
 </body>

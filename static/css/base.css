@@ -1,6 +1,6 @@
-/* main.css */
+/* base.css */
 
-/* Стили для body */
+/* Основные стили для body */
 body {
     display: flex;
     margin: 0;
@@ -9,12 +9,14 @@ body {
     color: #FFFFFF;
 }
 
+/* Контейнер для централизованного размещения содержимого */
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
+/* Блок для флеш-сообщений (уведомлений) */
 .flash-messages {
     position: fixed;
     top: 20px;
@@ -23,6 +25,7 @@ body {
     width: 400px;
 }
 
+/* Стили для отдельных флеш-сообщений */
 .flash-message {
     padding: 15px;
     margin-bottom: 10px;
@@ -32,19 +35,21 @@ body {
     animation: slideIn 0.5s forwards, fadeOut 0.5s 4.5s forwards;
 }
 
+/* Успешное сообщение */
 .flash-message.success {
     background-color: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
 }
 
+/* Ошибочное сообщение */
 .flash-message.error {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
 
-/* Анимация появления */
+/* Анимация для появления флеш-сообщения */
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -56,7 +61,7 @@ body {
     }
 }
 
-/* Анимация исчезновения */
+/* Анимация для исчезновения флеш-сообщения */
 @keyframes fadeOut {
     from {
         opacity: 1;
@@ -66,4 +71,3 @@ body {
         transform: translateY(-20px);
     }
 }
-

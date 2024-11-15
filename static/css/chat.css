@@ -1,15 +1,18 @@
 /* chat.css */
 
+/* Основной контейнер для чата */
 .chat-container {
     background-color: #2C2C3D;
     padding: 20px;
     border-radius: 10px;
     color: #FFFFFF;
     max-width: 600px;
-    margin: 0 auto;
+    margin: 20px auto 0;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    display: none;
 }
 
+/* Окно для отображения сообщений */
 .chat-box {
     background-color: #F5F5F5;
     border-radius: 10px;
@@ -20,12 +23,14 @@
     color: #333333;
 }
 
+/* Общий стиль для каждого сообщения */
 .message {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
 }
 
+/* Сообщение бота */
 .bot-message {
     color: #333333;
     background-color: #E8E8E8;
@@ -36,6 +41,7 @@
     align-items: center;
 }
 
+/* Сообщение пользователя */
 .user-message {
     color: #FFFFFF;
     background-color: #4A4A5A;
@@ -45,6 +51,7 @@
     margin-left: auto;
 }
 
+/* Блок для ввода сообщения */
 .chat-input-area {
     display: flex;
     align-items: center;
@@ -52,6 +59,7 @@
     margin-top: 10px;
 }
 
+/* Поле ввода текста */
 #chat-input {
     flex: 1;
     padding: 10px;
@@ -64,6 +72,7 @@
     font-size: 16px;
 }
 
+/* Кнопки отправки и очистки */
 #send-button, #clear-button {
     max-height: 45px;
     padding: 10px;
@@ -75,6 +84,7 @@
     font-size: 16px;
 }
 
+/* Информационный текст в чате */
 .chat-info {
     font-size: 12px;
     color: #AAAAAA;
@@ -82,10 +92,12 @@
     text-align: center;
 }
 
+/* Название агента */
 #agent-name {
     margin: 0;
 }
 
+/* Выпадающий список для выбора агента */
 #agent-select {
     width: 100%;
     padding: 10px;
@@ -96,26 +108,25 @@
     border: 1px solid #9F7AEA;
 }
 
+/* Стили для отключенных опций */
 #agent-select option:disabled {
     color: #777;
 }
 
+/* Опции выпадающего списка */
 #agent-select option {
     background-color: #2C2C3D;
     color: #FFFFFF;
 }
 
-.chat-container {
-    display: none; /* Скрыть чат по умолчанию */
-    margin-top: 20px;
-}
-
+/* Статус агента */
 .agent-status {
     margin-bottom: 10px;
     font-weight: bold;
     color: #FFFFFF;
 }
 
+/* Дополнительные отступы для блока ввода */
 .input-block {
     margin-top: 15px;
 }

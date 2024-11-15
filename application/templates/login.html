@@ -1,28 +1,44 @@
+<!--
+login.html
+Шаблон HTML для страницы авторизации пользователя.
+Позволяет пользователю ввести имя пользователя и пароль для входа в систему.
+-->
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Авторизация</title>
+    <!-- Подключаем CSS файл для оформления страницы авторизации -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
     <div class="login-container">
         <h2>Вход</h2>
-        <form method="POST" action="{{ url_for('main.login') }}">
+
+        <!-- Форма авторизации -->
+        <form method="POST" action="{{ url_for('user_bp.login') }}">
+            <!-- Поле для ввода имени пользователя -->
             <div class="input-block">
                 <label for="username">Имя пользователя</label>
                 <input type="text" id="username" name="username" required>
             </div>
+
+            <!-- Поле для ввода пароля -->
             <div class="input-block">
                 <label for="password">Пароль</label>
                 <input type="password" id="password" name="password" required>
             </div>
+
+            <!-- Кнопка для отправки формы входа -->
             <button type="submit">Войти</button>
         </form>
+
+        <!-- Вывод флеш-сообщений при ошибке входа или другой информации -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <p class="flash {{ category }}">{{ message }}</p>
+                    <p class="flash {{ category }}">{{ message }}</p> <!-- Сообщение с классом категории (успех или ошибка) -->
                 {% endfor %}
             {% endif %}
         {% endwith %}

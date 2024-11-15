@@ -1,13 +1,17 @@
 /* user_profile.css */
+
+/* Стиль для контейнера формы */
 .form-group {
     margin-bottom: 15px;
 }
 
+/* Стиль для меток формы */
 .form-group label {
     display: block;
     margin-bottom: 5px;
 }
 
+/* Стиль для полей ввода */
 .form-group input {
     width: 100%;
     padding: 8px;
@@ -15,6 +19,7 @@
     box-sizing: border-box;
 }
 
+/* Стиль для кнопок */
 button {
     padding: 8px 12px;
     background-color: #4CAF50;
@@ -23,6 +28,7 @@ button {
     cursor: pointer;
 }
 
+/* Стиль для кнопок при наведении */
 button:hover {
     background-color: #45a049;
 }

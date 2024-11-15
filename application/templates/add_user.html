@@ -1,27 +1,42 @@
+<!--
+add_user.html
+
+Шаблон HTML для страницы для добавления пользователей.
+-->
+
 {% extends "base.html" %}
 
 {% block title %}Добавить пользователя{% endblock %}
 
 {% block extra_styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/add_user.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/add_user.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <h1>Добавить пользователя</h1>
+
+    <!-- Форма для добавления нового пользователя -->
     <form method="POST">
+        <!-- Поле для ввода имени пользователя -->
         <div class="input-block">
             <label for="username">Имя пользователя</label>
             <input type="text" id="username" name="username" placeholder="Введите имя пользователя" required>
         </div>
+
+        <!-- Поле для ввода пароля -->
         <div class="input-block">
             <label for="password">Пароль</label>
             <input type="password" id="password" name="password" placeholder="Введите пароль" required>
         </div>
+
+        <!-- Чекбокс для назначения пользователя администратором -->
         <div class="input-block" id="input-block-admin">
-            <input type="checkbox" name="is_admin">
+            <input type="checkbox" name="is_admin" id="is_admin">
             <label for="is_admin">Администратор</label>
         </div>
+
+        <!-- Кнопка для отправки формы и добавления пользователя -->
         <button type="submit">Добавить</button>
     </form>
 </div>

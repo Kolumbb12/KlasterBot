@@ -1,13 +1,24 @@
-<!-- user_list.html -->
+<!--
+user_list.html
+Шаблон HTML для отображения списка пользователей.
+Позволяет администратору выбирать пользователя из выпадающего списка и переходить к странице профиля выбранного пользователя для редактирования его данных.
+-->
+
 {% extends "base.html" %}
 
 {% block title %}Список пользователей{% endblock %}
 
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_list.css') }}">
+{% endblock %}
+
+
 {% block content %}
 <h1>Список пользователей</h1>
-<form method="get" action="{{ url_for('main.user_profile') }}">
+<form method="get" action="{{ url_for('user_bp.user_profile') }}">
     <div class="form-group">
         <label for="user_select">Выберите пользователя</label>
+        <!-- Выпадающий список для выбора пользователя -->
         <select name="user_id" id="user_select" onchange="this.form.submit()">
             <option value="">-- Выберите пользователя --</option>
             {% for user in users %}
@@ -16,22 +27,4 @@
         </select>
     </div>
 </form>
-
-<style>
-    #user_select {
-        width: 100%;
-        padding: 10px;
-        font-size: 16px;
-        border-radius: 5px;
-        background-color: #2C2C3D;
-        color: #FFFFFF;
-        border: 1px solid #9F7AEA;
-    }
-
-    #user_select option {
-        background-color: #2C2C3D;
-        color: #FFFFFF;
-    }
-</style>
-
 {% endblock %}

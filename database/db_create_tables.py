@@ -1,9 +1,15 @@
+"""
+db_create_tables.py
+Скрипт для создания таблиц в базе данных, необходимых для работы приложения.
+Подключается к базе данных, проверяет наличие таблиц и создает их, если они отсутствуют.
+"""
+
 from mysql.connector import Error
 from db_connection import db_instance
 
 
 try:
-    # Подключение к базе данных
+    # Подключение к базе данных через экземпляр Singleton
     connection = db_instance.get_connection()
 
     if connection.is_connected():
@@ -12,7 +18,7 @@ try:
         # Создание курсора для выполнения SQL-запросов
         cursor = connection.cursor()
 
-        # Запрос для создания таблицы users
+        # Запрос для создания таблицы пользователей
         create_table_query = """
         CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,12 +34,13 @@ try:
             UNIQUE INDEX username_UNIQUE (username ASC)
         );
         """
+        # Выполнение запроса на создание таблицы users
         cursor.execute(create_table_query)
         print("Таблица 'users' создана или уже существует.")
 
-        # Запрос для создания таблицы agents
+        # Запрос для создания таблицы агентов
         create_agents_table_query = """
-            CREATE TABLE IF NOT EXISTS gpt_agents (
+        CREATE TABLE IF NOT EXISTS gpt_agents (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
             name NVARCHAR(50) NOT NULL,
@@ -53,22 +60,24 @@ try:
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
         """
+        # Выполнение запроса на создание таблицы gpt_agents
         cursor.execute(create_agents_table_query)
-        print("Таблица 'agents' создана или уже существует.")
+        print("Таблица 'gpt_agents' создана или уже существует.")
 
-        # Запрос для создания таблицы chat_types
-        create_chats_table_query = """
-            CREATE TABLE IF NOT EXISTS chat_types (
+        # Запрос для создания таблицы типов чатов
+        create_chat_types_table_query = """
+        CREATE TABLE IF NOT EXISTS chat_types (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(255) NOT NULL
         );
         """
-        cursor.execute(create_chats_table_query)
+        # Выполнение запроса на создание таблицы chat_types
+        cursor.execute(create_chat_types_table_query)
         print("Таблица 'chat_types' создана или уже существует.")
 
-        # Запрос для создания таблицы chats
+        # Запрос для создания таблицы истории чатов
         create_chats_table_query = """
-            CREATE TABLE IF NOT EXISTS chats (
+        CREATE TABLE IF NOT EXISTS chats (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
             agent_id INT NOT NULL,
@@ -83,12 +92,15 @@ try:
             FOREIGN KEY (chat_type_id) REFERENCES chat_types(id)
         );
         """
+        # Выполнение запроса на создание таблицы chats
         cursor.execute(create_chats_table_query)
         print("Таблица 'chats' создана или уже существует.")
 
 except Error as e:
     print(f"Ошибка подключения к базе данных: {e}")
+
 finally:
+    # Закрытие соединения и курсора, если соединение активно
     if connection.is_connected():
         cursor.close()
         print("Подключение к базе данных закрыто.")

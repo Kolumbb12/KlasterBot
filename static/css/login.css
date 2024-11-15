@@ -1,5 +1,6 @@
-/* static/css/login.css */
+/* login.css */
 
+/* Основной стиль для body */
 body {
     font-family: Arial, sans-serif;
     background-color: #1c1c28;
@@ -11,6 +12,7 @@ body {
     margin: 0;
 }
 
+/* Контейнер для формы входа */
 .login-container {
     background-color: #2a2a3c;
     padding: 30px;
@@ -20,17 +22,20 @@ body {
     text-align: center;
 }
 
+/* Заголовок формы */
 h2 {
     margin: 0 0 20px;
     color: #d1d1e0;
 }
 
+/* Метки для полей ввода */
 label {
     display: block;
     margin: 10px 0 5px;
     font-size: 14px;
 }
 
+/* Поля ввода для логина и пароля */
 input[type="text"],
 input[type="password"] {
     width: 300px;
@@ -42,6 +47,7 @@ input[type="password"] {
     color: #fff;
 }
 
+/* Основной стиль для кнопки */
 button {
     width: 320px;
     padding: 10px;
@@ -54,10 +60,12 @@ button {
     transition: background-color 0.3s;
 }
 
+/* Стиль кнопки при наведении */
 button:hover {
     background-color: #4949b8;
 }
 
+/* Стиль для сообщения об ошибке */
 .flash {
     color: red;
     margin-top: 15px;

@@ -1,3 +1,6 @@
+/* add_user.css */
+
+/* Контейнер для формы добавления пользователя */
 .container {
     background-color: #2C2C3D;
     padding: 20px;
@@ -8,16 +11,19 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Блок для полей ввода */
 .input-block {
     margin-bottom: 15px;
 }
 
+/* Метки для полей ввода */
 .input-block label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
 }
 
+/* Стили для полей ввода */
 .input-block input {
     width: 100%;
     max-width: 366px;
@@ -28,17 +34,20 @@
     color: #FFFFFF;
 }
 
+/* Специальный стиль для блока администратора */
 #input-block-admin {
     display: flex;
     align-items: center;
     position: absolute;
 }
 
+/* Стили для чекбокса администратора */
 #input-block-admin input[type="checkbox"] {
     transform: translateY(-2.5px);
     margin-right: 7px;
 }
 
+/* Стили для кнопки отправки */
 button[type="submit"] {
     padding: 10px;
     border: none;

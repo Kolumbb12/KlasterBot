@@ -1,6 +1,23 @@
+/*
+chat.js
+Этот файл содержит JavaScript-код для управления взаимодействием на странице чата.
+Основные функции включают отправку сообщений, очистку истории чата, загрузку истории чата и переключение агентов.
+
+Основные компоненты:
+1. `toggleAgentStatus(agentId)`: Изменяет статус агента.
+2. `loadChatHistory(agentId, startMessageText)`: Загружает историю чата для выбранного агента и добавляет стартовое
+сообщение, если история пуста.
+3. `sendMessage()`: Отправляет сообщение пользователя и отображает ответ агента в чате.
+4. `clearChat()`: Очищает историю чата для выбранного агента.
+5. Обработчики событий: Отвечают за нажатие клавиш и выбор агента, обновляя историю чата и интерфейс пользователя.
+*/
+
+// Обработчик события для кнопки отправки сообщения
 document.getElementById('send-button').addEventListener('click', sendMessage);
+// Обработчик события для кнопки очистки чата
 document.getElementById('clear-button').addEventListener('click', clearChat);
 
+// Обработчик выбора агента
 document.getElementById('agent-select').addEventListener('change', function() {
     const agentId = this.value;
     if (agentId) {
@@ -15,6 +32,7 @@ document.getElementById('agent-select').addEventListener('change', function() {
                     return;
                 }
 
+                // Обновление информации об агенте
                 document.getElementById('start-message').innerText = data.start_message;
                 document.getElementById('error-message').innerText = data.error_message;
                 document.getElementById('agent-name').innerText = `Агент: ${data.name}`;
@@ -33,6 +51,7 @@ document.getElementById('agent-select').addEventListener('change', function() {
     }
 });
 
+// Функция для загрузки истории чата
 function loadChatHistory(agentId, startMessageText) {
     // AJAX-запрос для получения истории чата
     fetch(`/chat_history?agent_id=${agentId}`)
@@ -47,6 +66,7 @@ function loadChatHistory(agentId, startMessageText) {
             startMessageDiv.innerHTML = `<span>${startMessageText}</span>`;
             chatBox.appendChild(startMessageDiv);
 
+            // Отображение истории сообщений
             data.chat_history.forEach(message => {
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('message', message.role === 'user' ? 'user-message' : 'bot-message');
@@ -59,6 +79,7 @@ function loadChatHistory(agentId, startMessageText) {
         .catch(error => console.error('Ошибка при загрузке истории чата:', error));
 }
 
+// Функция для отправки сообщения
 function sendMessage() {
     const agentId = document.getElementById('agent-select').value;
     const chatInput = document.getElementById('chat-input');
@@ -72,6 +93,7 @@ function sendMessage() {
     userMessage.textContent = messageText;
     chatBox.appendChild(userMessage);
 
+    // Анимация появления сообщения пользователя
     userMessage.style.opacity = 0;
     setTimeout(() => {
         userMessage.style.transition = "opacity 0.5s";
@@ -81,6 +103,7 @@ function sendMessage() {
     chatInput.value = "";
     chatBox.scrollTop = chatBox.scrollHeight;
 
+    // Отправка сообщения на сервер
     fetch('/chat', {
         method: 'POST',
         headers: {
@@ -99,6 +122,7 @@ function sendMessage() {
             botMessage.textContent = data.response;
             chatBox.appendChild(botMessage);
 
+            // Анимация появления сообщения бота
             botMessage.style.opacity = 0;
             setTimeout(() => {
                 botMessage.style.transition = "opacity 0.5s";
@@ -111,6 +135,7 @@ function sendMessage() {
     .catch(error => console.error('Ошибка:', error));
 }
 
+// Функция для очистки чата
 function clearChat() {
     const agentId = document.getElementById('agent-select').value;
     if (!agentId) {
@@ -140,11 +165,11 @@ function clearChat() {
     .catch(error => console.error('Ошибка:', error));
 }
 
-// Получаем элементы
+// Получаем элементы ввода и кнопки
 const chatInput = document.getElementById('chat-input');
 const sendButton = document.getElementById('send-button');
 
-// Добавляем обработчик события для нажатия клавиши в поле ввода
+// Добавляем обработчик события на нажатие Enter в поле ввода
 chatInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         event.preventDefault(); // Предотвращаем стандартное поведение Enter (новая строка)

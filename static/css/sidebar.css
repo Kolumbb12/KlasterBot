@@ -1,5 +1,6 @@
 /* sidebar.css */
 
+/* Основной контейнер боковой панели */
 .sidebar {
     width: 250px;
     background-color: #2C2C3D;
@@ -12,6 +13,7 @@
     margin-right: 10px;
 }
 
+/* Логотип в боковой панели */
 .logo {
     font-size: 24px;
     color: #9F7AEA;
@@ -19,10 +21,12 @@
     margin-bottom: 20px;
 }
 
+/* Меню в боковой панели */
 .menu {
     width: 100%;
 }
 
+/* Элемент меню */
 .menu-item {
     display: block;
     padding: 15px;
@@ -33,15 +37,18 @@
     transition: background 0.3s;
 }
 
+/* Эффект наведения и активное состояние элемента меню */
 .menu-item:hover, .menu-item.active {
     background-color: #9F7AEA;
 }
 
+/* Кнопка выхода */
 .menu-item.logout {
-    color: #ff4d4d; /* Цвет кнопки выхода, чтобы выделить её */
+    color: #ff4d4d; /* Яркий цвет для выделения кнопки выхода */
 }
 
+/* Эффект наведения на кнопку выхода */
 .menu-item.logout:hover {
-    background-color: #ff3333; /* Цвет при наведении на кнопку выхода */
+    background-color: #ff3333; /* Цвет фона при наведении на кнопку выхода */
     color: white;
 }

@@ -1,9 +1,16 @@
+<!--
+agent_selection.html
+Шаблон HTML для страницы отображения списка агентов пользователя.
+Предоставляет список всех агентов, созданных пользователем, с возможностью настройки
+и изменения их статуса (включить/выключить).
+-->
+
 {% extends "base.html" %}
 
 {% block title %}Мои агенты{% endblock %}
 
 {% block extra_styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/agent_selection.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/agent_selection.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -11,13 +18,17 @@
     <h1>Мои агенты</h1>
     <div class="agent-grid">
         {% for agent in agents %}
+        <!-- Карточка для каждого агента -->
         <div class="agent-card">
             <h2>{{ agent.name }}</h2>
             <p>ID: {{ agent.id }}</p>
             <p class="agent-status">Агент {{ 'включен' if agent.is_active else 'выключен' }}</p>
             <div class="agent-actions">
-                <button onclick="location.href='{{ url_for('main.agent_settings', agent_id=agent.id) }}'" class="settings-button">⚙ Настроить агента</button>
-                <a href="{{ url_for('main.toggle_agent_status', agent_id=agent.id) }}">
+                <!-- Кнопка для перехода к настройкам агента -->
+                <button onclick="location.href='{{ url_for('agent_bp.agent_settings', agent_id=agent.id) }}'" class="settings-button">⚙ Настроить агента</button>
+
+                <!-- Кнопка для переключения статуса агента (включен/выключен) -->
+                <a href="{{ url_for('agent_bp.toggle_agent_status', agent_id=agent.id) }}">
                     <button class="{{ 'active' if agent.is_active else 'inactive' }}">
                         {{ 'Выключить' if agent.is_active else 'Включить' }}
                     </button>

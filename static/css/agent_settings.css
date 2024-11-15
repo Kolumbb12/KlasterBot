@@ -1,3 +1,6 @@
+/* agent_settings.css */
+
+/* Основной контейнер для страницы настроек агента */
 .container {
     background-color: #2C2C3D;
     padding: 20px;
@@ -8,11 +11,18 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Блок для ввода данных */
 .input-block {
     width: 96.5%;
     margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 8px;
+    font-size: 16px;
 }
 
+/* Метка для каждого поля */
 .input-block label {
     display: block;
     margin-bottom: 5px;
@@ -20,6 +30,7 @@
     align-items: center;
 }
 
+/* Поля ввода данных */
 .input-block input, .input-block textarea, .input-block select {
     width: 100%;
     padding: 10px;
@@ -30,32 +41,28 @@
     color: #FFFFFF;
 }
 
-.input-block {
-    display: flex;
-    align-items: center;
-    justify-content: start;
-    gap: 8px;
-    font-size: 16px;
-}
-
+/* Чекбокс внутри блока */
 .input-block input[type="checkbox"] {
-    width: auto; /* Убирает лишнюю ширину */
+    width: auto;
     height: auto;
     margin: 0;
 }
 
+/* Поле для ввода инструкции боту */
 #bot-instruction {
     width: 100%;
-    min-height: 40px; /* Минимальная высота */
-    overflow: hidden; /* Скрывает скролл при изменении размера */
-    resize: none; /* Отключает ручное изменение размера */
+    min-height: 40px;
+    overflow: hidden;
+    resize: none;
 }
 
+/* Отображение значения температуры */
 #temperature-value {
     display: inline-block;
     margin-left: 10px;
 }
 
+/* Кнопка сохранения */
 #save-button {
     padding: 10px;
     border: none;

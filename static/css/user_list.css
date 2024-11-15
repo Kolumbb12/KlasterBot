@@ -1,0 +1,18 @@
+/* user_list.css */
+
+/* Стиль для выпадающего списка выбора пользователя */
+#user_select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: #2C2C3D;
+    color: #FFFFFF;
+    border: 1px solid #9F7AEA;
+}
+
+/* Стиль для каждого элемента опции внутри выпадающего списка */
+#user_select option {
+    background-color: #2C2C3D;
+    color: #FFFFFF;
+}

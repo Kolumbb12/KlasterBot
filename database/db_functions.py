@@ -1,10 +1,24 @@
+"""
+db_functions.py
+Файл, содержащий функции для работы с таблицами базы данных: users, gpt_agents и chats.
+Этот файл предоставляет доступ к данным и позволяет выполнять CRUD операции (создание, чтение, обновление, удаление)
+для таблиц, таких как users (пользователи), gpt_agents (агенты GPT) и chats (история чатов).
+"""
+
 from mysql.connector import Error
 from database.db_connection import db_instance
 
 
-# Функции для таблицы users
+######################################## Функции для работы с таблицей "users" #########################################
 
 def select_user_by_id(user_id):
+    """
+    Извлекает данные пользователя по его ID.
+
+    :param user_id: ID пользователя, данные которого нужно получить.
+    :return: Словарь с данными пользователя (username, пароль, имя и т.д.), если пользователь существует.
+    Возвращает None, если пользователь не найден.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -18,6 +32,11 @@ def select_user_by_id(user_id):
 
 
 def get_all_users():
+    """
+    Извлекает список всех активных пользователей (которые не были помечены как удаленные).
+
+    :return: Список словарей с данными пользователей (id и username) для каждого активного пользователя.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -31,6 +50,14 @@ def get_all_users():
 
 
 def insert_user(username, password, is_admin=0):
+    """
+    Вставляет нового пользователя в базу данных с указанными именем пользователя, паролем и статусом администратора.
+
+    :param username: Имя нового пользователя (уникальное).
+    :param password: Пароль нового пользователя.
+    :param is_admin: Флаг, указывающий, является ли пользователь администратором (0 - нет, 1 - да).
+    :raises ValueError: Если имя пользователя уже занято, вызывает исключение с сообщением об ошибке.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor()
@@ -44,12 +71,18 @@ def insert_user(username, password, is_admin=0):
         if "Duplicate entry" in str(e):
             raise ValueError("Пользователь с таким именем уже существует.")
         else:
-            raise e  # Пробрасываем другие ошибки
+            raise e
     finally:
         cursor.close()
 
 
 def update_user_password(user_id, new_password):
+    """
+    Обновляет пароль пользователя по его ID.
+
+    :param user_id: ID пользователя, пароль которого нужно обновить.
+    :param new_password: Новый пароль пользователя.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor()
@@ -66,6 +99,11 @@ def update_user_password(user_id, new_password):
 
 
 def delete_user(user_id):
+    """
+    Помечает пользователя как удаленного (soft delete) по его ID.
+
+    :param user_id: ID пользователя, которого нужно пометить как удаленного.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor()
@@ -79,11 +117,17 @@ def delete_user(user_id):
 
 
 def update_user_profile(user_id, settings):
+    """
+    Обновляет профиль пользователя. Доступные для обновления поля включают полное имя, email, телефон и пароль.
+
+    :param user_id: ID пользователя, профиль которого нужно обновить.
+    :param settings: Словарь с ключами и значениями для обновления (например, {'full_name': 'Иванов Иван Иванович'}).
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor()
 
-        # Формируем динамический запрос SQL
+        # Формирование динамического SQL-запроса для обновления
         update_fields = []
         values = []
         for field, value in settings.items():
@@ -91,7 +135,6 @@ def update_user_profile(user_id, settings):
                 update_fields.append(f"{field} = %s")
                 values.append(value)
 
-        # Если есть поля для обновления
         if update_fields:
             update_query = f"UPDATE users SET {', '.join(update_fields)} WHERE id = %s AND is_deleted = FALSE"
             values.append(user_id)
@@ -106,9 +149,16 @@ def update_user_profile(user_id, settings):
         cursor.close()
 
 
-# Функции для таблицы gpt_agents
+###################################### Функции для работы с таблицей "gpt_agents" ######################################
 
 def select_agent_by_id(agent_id):
+    """
+    Извлекает данные агента GPT по его ID.
+
+    :param agent_id: ID агента GPT, данные которого нужно получить.
+    :return: Словарь с данными агента (имя, инструкция и т.д.), если агент существует. Возвращает None,
+    если агент не найден.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -121,14 +171,31 @@ def select_agent_by_id(agent_id):
         cursor.close()
 
 
-def insert_agent(user_id, name, instruction, start_message, error_message, temperature=0.5, max_tokens=150, message_buffer=0, accumulate_messages=False, transmit_date=False, api_key=None):
+def insert_agent(user_id, name, instruction, start_message, error_message, temperature=0.5, max_tokens=150,
+                 message_buffer=0, accumulate_messages=False, transmit_date=False, api_key=None):
+    """
+    Добавляет нового агента GPT в базу данных.
+
+    :param user_id: ID пользователя, которому принадлежит агент.
+    :param name: Имя агента.
+    :param instruction: Инструкция для агента.
+    :param start_message: Приветственное сообщение.
+    :param error_message: Сообщение об ошибке.
+    :param temperature: Температура для генерации текста.
+    :param max_tokens: Максимальное количество токенов для ответа.
+    :param message_buffer: Буфер сообщений.
+    :param accumulate_messages: Флаг накопления сообщений.
+    :param transmit_date: Флаг передачи даты.
+    :param api_key: API ключ для агента.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor()
         cursor.execute(
             """INSERT INTO gpt_agents (user_id, name, instruction, start_message, error_message, temperature, max_tokens, message_buffer, accumulate_messages, transmit_date, api_key) 
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-            (user_id, name, instruction, start_message, error_message, temperature, max_tokens, message_buffer, accumulate_messages, transmit_date, api_key)
+            (user_id, name, instruction, start_message, error_message, temperature, max_tokens, message_buffer,
+             accumulate_messages, transmit_date, api_key)
         )
         connection.commit()
         print("Агент успешно добавлен.")
@@ -139,6 +206,12 @@ def insert_agent(user_id, name, instruction, start_message, error_message, tempe
 
 
 def select_all_agents_by_user_id(user_id):
+    """
+    Извлекает всех агентов, связанных с конкретным пользователем, из базы данных.
+
+    :param user_id: ID пользователя, для которого нужно получить агентов.
+    :return: Список агентов, принадлежащих пользователю, в формате словаря.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -152,19 +225,25 @@ def select_all_agents_by_user_id(user_id):
 
 
 def update_agent_settings(agent_id, settings):
+    """
+    Обновляет настройки агента в базе данных для указанного агентского ID.
+
+    :param agent_id: ID агента, для которого нужно обновить настройки.
+    :param settings: Словарь с полями и их новыми значениями для обновления.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor()
 
-        # Формируем динамический запрос SQL
+        # Формируем динамический запрос SQL для обновления только указанных полей
         update_fields = []
         values = []
         for field, value in settings.items():
-            if field not in ('created_at', 'is_active'):
+            if field not in ('created_at', 'is_active'):  # Исключаем неизменяемые поля
                 update_fields.append(f"{field} = %s")
                 values.append(value)
 
-        # Если есть поля для обновления
+        # Выполняем обновление, если есть поля для обновления
         if update_fields:
             update_query = f"UPDATE gpt_agents SET {', '.join(update_fields)} WHERE id = %s AND is_deleted = FALSE"
             values.append(agent_id)
@@ -180,6 +259,12 @@ def update_agent_settings(agent_id, settings):
 
 
 def set_agent_active_status(agent_id, is_active):
+    """
+    Изменяет статус активности агента.
+
+    :param agent_id: ID агента, для которого нужно изменить статус.
+    :param is_active: Новое значение статуса активности (True или False).
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor()
@@ -193,23 +278,16 @@ def set_agent_active_status(agent_id, is_active):
     finally:
         cursor.close()
 
-
-def delete_agent(agent_id):
-    try:
-        connection = db_instance.get_connection()
-        cursor = connection.cursor()
-        cursor.execute("UPDATE gpt_agents SET is_deleted = TRUE WHERE id = %s", (agent_id,))
-        connection.commit()
-        print("Агент удален.")
-    except Error as e:
-        print(f"Ошибка при удалении агента: {e}")
-    finally:
-        cursor.close()
-
-
-# Функции для таблицы chats
+######################################### Функции для работы таблицей с "chats" ########################################
 
 def select_chat_by_id(chat_id):
+    """
+    Извлекает данные чата по его ID.
+
+    :param chat_id: ID чата.
+    :return: Словарь с данными чата (пользовательские и бот-сообщения), если чат существует.
+    Возвращает None, если чат не найден.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -222,6 +300,15 @@ def select_chat_by_id(chat_id):
         cursor.close()
 
 def get_chat_history_by_user_and_agent(user_id, agent_id, chat_type_id):
+    """
+    Извлекает историю чата для заданного пользователя, агента и типа чата.
+
+    :param user_id: ID пользователя, чья история чата требуется.
+    :param agent_id: ID агента, связанного с этим чатом.
+    :param chat_type_id: ID типа чата (например, 1 - тестовый чат).
+    :return: Список словарей с сообщениями чата, где каждое сообщение включает роль (user или assistant) и текст сообщения (content).
+             Если история пуста, возвращается пустой список.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -234,7 +321,7 @@ def get_chat_history_by_user_and_agent(user_id, agent_id, chat_type_id):
         cursor.execute(query, (user_id, agent_id, chat_type_id))
         history = cursor.fetchall()
 
-        # Проверяем, что история не пуста и форматируем для передачи в шаблон
+        # Формируем список словарей для передачи истории чата в шаблон
         conversation_history = []
         for record in history:
             if record['user_message']:
@@ -250,6 +337,15 @@ def get_chat_history_by_user_and_agent(user_id, agent_id, chat_type_id):
 
 
 def insert_chat_message(user_id, agent_id, chat_type_id, user_message, bot_response):
+    """
+    Вставляет новое сообщение чата в базу данных.
+
+    :param user_id: ID пользователя, отправившего сообщение.
+    :param agent_id: ID агента, участвующего в чате.
+    :param chat_type_id: ID типа чата.
+    :param user_message: Текст сообщения пользователя.
+    :param bot_response: Текст ответа бота.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -266,6 +362,13 @@ def insert_chat_message(user_id, agent_id, chat_type_id, user_message, bot_respo
 
 
 def delete_chat_history(user_id, agent_id, chat_type_id):
+    """
+    Помечает все сообщения чата как удаленные (soft delete) для заданного пользователя, агента и типа чата.
+
+    :param user_id: ID пользователя, для которого необходимо очистить историю чата.
+    :param agent_id: ID агента, связанного с этим чатом.
+    :param chat_type_id: ID типа чата.
+    """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor()
@@ -280,4 +383,3 @@ def delete_chat_history(user_id, agent_id, chat_type_id):
         print(f"Ошибка при удалении истории чата: {e}")
     finally:
         cursor.close()
-        connection.close()

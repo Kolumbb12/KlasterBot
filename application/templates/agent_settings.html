@@ -1,57 +1,85 @@
+<!-- 
+agent_settings.html
+Шаблон HTML для страницы настройки агента.
+Этот файл предоставляет форму для настройки параметров конкретного агента. 
+Содержит поля для ввода имени агента, инструкций, стартового сообщения, сообщения об ошибке, 
+настройки температуры, количества токенов, буфера сообщений и других параметров.
+-->
+
 {% extends "base.html" %}
 
 {% block title %}Настройки Агента{% endblock %}
 
 {% block extra_styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/agent_settings.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/agent_settings.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <h1>{{ page_title }}</h1>
-    <form method="POST" action="{{ url_for('main.agent_settings', agent_id=agent.id if agent else None) }}">
-        <!-- Поля для настроек агента -->
+    <form method="POST" action="{{ url_for('agent_bp.agent_settings', agent_id=agent.id if agent else None) }}">
+        <!-- Поле для имени агента -->
         <div class="input-block">
             <label for="agent-name">Имя агента</label>
             <input type="text" name="name" id="agent-name" value="{{ agent.name if agent else '' }}" placeholder="Введите имя агента" required>
         </div>
+        
+        <!-- Поле для инструкции агента -->
         <div class="input-block">
             <label for="bot-instruction">Инструкция для бота</label>
             <textarea name="instruction" id="bot-instruction" placeholder="Роль вашего агента..." required>{{ agent.instruction if agent else '' }}</textarea>
         </div>
+        
+        <!-- Поле для стартового сообщения -->
         <div class="input-block">
             <label for="start-message">Стартовое сообщение</label>
             <input type="text" name="start_message" id="start-message" placeholder="Введите стартовое сообщение..." value="{{ agent.start_message if agent else '' }}" required>
         </div>
+        
+        <!-- Поле для сообщения об ошибке -->
         <div class="input-block">
             <label for="error-message">Сообщение об ошибке</label>
             <input type="text" name="error_message" id="error-message" placeholder="Введите сообщение об ошибке..." value="{{ agent.error_message if agent else '' }}" required>
         </div>
+        
+        <!-- Поле для настройки температуры -->
         <div class="input-block">
             <label for="temperature">Температура</label>
             <input type="range" name="temperature" id="temperature" min="0" max="100" value="{{ agent.temperature * 100 if agent else 0 }}">
             <span id="temperature-value">{{ agent.temperature * 100 if agent else 0 }}%</span>
         </div>
+        
+        <!-- Поле для максимального количества токенов -->
         <div class="input-block">
             <label for="max-tokens">Максимальное количество токенов</label>
             <input type="number" name="max_tokens" id="max-tokens" value="{{ agent.max_tokens if agent else 150 }}" min="0" placeholder="Введите количество токенов" required>
         </div>
+        
+        <!-- Поле для буфера сообщений -->
         <div class="input-block">
             <label for="message-buffer">Буфер сообщений (секунды)</label>
             <input type="number" name="message_buffer" id="message-buffer" value="{{ agent.message_buffer if agent else 0 }}" min="0" placeholder="Введите время в секундах" required>
         </div>
+        
+        <!-- Флажок для накопления сообщений -->
         <div class="input-block">
             <input type="checkbox" name="accumulate_messages" id="message-buffer-checkbox" {% if agent and agent.accumulate_messages %}checked{% endif %}>
             <label for="message-buffer-checkbox">Накопление сообщений</label>
         </div>
+        
+        <!-- Флажок для трансляции текущей даты -->
         <div class="input-block">
             <input type="checkbox" name="transmit_date" id="current-date" {% if agent and agent.transmit_date %}checked{% endif %}>
             <label for="current-date">Транслировать текущую дату агенту</label>
         </div>
+        
+        <!-- Поле для API-ключа агента -->
         <div class="input-block">
-            <label for="api-key" >Свой GPT API-key</label>
+            <label for="api-key">Свой GPT API-key</label>
             <input type="text" name="api_key" id="api-key" value="{{ agent.api_key if agent else '' }}" placeholder="Введите ваш API-key" required>
         </div>
+        
+        <!-- Кнопка для сохранения настроек -->
         <button type="submit" id="save-button">Сохранить</button>
     </form>
 </div>
