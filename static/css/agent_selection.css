@@ -63,3 +63,7 @@
     width: 100px;
     background-color: #4CAF50;
 }
+
+.agent-actions .assign-platform-button {
+    width: 100px;
+}

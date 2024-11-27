@@ -383,3 +383,54 @@ def delete_chat_history(user_id, agent_id, chat_type_id):
         print(f"Ошибка при удалении истории чата: {e}")
     finally:
         cursor.close()
+
+####################################### Функции для работы с таблицей "sessions" #######################################
+
+def get_available_platforms(agent_id):
+    """
+    Извлекает список доступных платформ для агента, исключая те, для которых сессии уже созданы.
+
+    :param agent_id: ID агента.
+    :return: Список доступных платформ в виде словарей с ключами 'id' и 'name'.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT ct.id, ct.name 
+            FROM chat_types ct
+            LEFT JOIN sessions s ON ct.id = s.chat_type_id AND s.agent_id = %s AND s.is_deleted = FALSE
+            WHERE s.id IS NULL
+        """, (agent_id,))
+        platforms = cursor.fetchall()
+        return platforms
+    except Error as e:
+        print(f"Ошибка при получении доступных платформ: {e}")
+        return []
+    finally:
+        cursor.close()
+
+
+def add_session(user_id, agent_id, chat_type_id):
+    """
+    Создаёт новую запись сессии в таблице `sessions`.
+    :param user_id: ID пользователя.
+    :param agent_id: ID агента.
+    :param chat_type_id: ID типа чата.
+    :return: ID созданной сессии.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor()
+        cursor.execute("""
+            INSERT INTO sessions (user_id, agent_id, chat_type_id, is_active, created_at, updated_at)
+            VALUES (%s, %s, %s, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """, (user_id, agent_id, chat_type_id))
+        connection.commit()
+        return cursor.lastrowid  # Возвращаем ID созданной сессии
+    except Error as e:
+        print(f"Ошибка при создании сессии: {e}")
+        return None
+    finally:
+        cursor.close()
+

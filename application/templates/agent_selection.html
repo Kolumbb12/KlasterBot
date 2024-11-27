@@ -27,8 +27,12 @@ agent_selection.html
                 <!-- Кнопка для перехода к настройкам агента -->
                 <button onclick="location.href='{{ url_for('agent_bp.agent_settings', agent_id=agent.id) }}'" class="settings-button">⚙ Настроить агента</button>
 
+                <button onclick="location.href='{{ url_for('session_bp.assign_platform', agent_id=agent.id) }}'" class="assign-platform-button">
+                    Назначить
+                </button>
+
                 <!-- Кнопка для переключения статуса агента (включен/выключен) -->
-                <a href="{{ url_for('agent_bp.toggle_agent_status', agent_id=agent.id) }}">
+                <br><a href="{{ url_for('agent_bp.toggle_agent_status', agent_id=agent.id) }}">
                     <button class="{{ 'active' if agent.is_active else 'inactive' }}">
                         {{ 'Выключить' if agent.is_active else 'Включить' }}
                     </button>

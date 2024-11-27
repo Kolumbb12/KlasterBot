@@ -1,0 +1,82 @@
+/* assign_platform.css */
+
+/* Основной контейнер для страницы */
+.container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #2A2A40;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Заголовок страницы */
+h1 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #FFFFFF;
+}
+
+/* Формы */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Метка для select */
+label {
+    font-size: 16px;
+    color: #CCCCCC;
+}
+
+/* Стиль для select */
+select {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    background-color: #3C3C54;
+    color: #FFFFFF;
+    outline: none;
+}
+
+/* Кнопка назначения */
+button[type="submit"] {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover эффект для кнопки */
+button[type="submit"]:hover {
+    background-color: #45A049;
+}
+
+/* Фокус на select */
+select:focus {
+    border: 2px solid #9F7AEA;
+    outline: none;
+}
+
+/* Адаптивность для маленьких экранов */
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    select, button[type="submit"] {
+        font-size: 14px;
+    }
+}

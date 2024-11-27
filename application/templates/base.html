@@ -24,6 +24,7 @@ base.html
         <div class="logo">KLASTERBOT</div>
         <nav class="menu">
             <a href="{{ url_for('agent_bp.agent_selection') }}" class="menu-item">Мои агенты</a>
+            <a href="{{ url_for('session_bp.sessions') }}" class="menu-item">Сессии</a>
             <a href="{{ url_for('agent_bp.agent_settings') }}" class="menu-item">Создать агента</a>
             <a href="{{ url_for('chat_bp.chat') }}" class="menu-item">Чат</a>
             <a href="{{ url_for('user_bp.user_profile') }}" class="menu-item">Профиль</a>

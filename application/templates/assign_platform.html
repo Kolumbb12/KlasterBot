@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Назначить платформу{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/assign_platform.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Назначить платформу для агента: {{ agent.name }}</h1>
+    <form method="POST" action="{{ url_for('session_bp.create_session', agent_id=agent.id) }}">
+        <label for="platform">Выберите платформу:</label>
+        <select name="platform" id="platform">
+            {% for platform in platforms %}
+                <option value="{{ platform.id }}">{{ platform.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Назначить</button>
+    </form>
+</div>
+{% endblock %}

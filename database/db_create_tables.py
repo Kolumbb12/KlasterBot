@@ -82,6 +82,7 @@ try:
             user_id INT NOT NULL,
             agent_id INT NOT NULL,
             chat_type_id INT NOT NULL,
+            session_id INT NULL,
             user_message TEXT,
             bot_response TEXT,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -89,12 +90,34 @@ try:
             is_deleted BOOLEAN DEFAULT FALSE,
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (agent_id) REFERENCES gpt_agents(id),
-            FOREIGN KEY (chat_type_id) REFERENCES chat_types(id)
+            FOREIGN KEY (chat_type_id) REFERENCES chat_types(id),
+            FOREIGN KEY (session_id) REFERENCES sessions(id)
         );
         """
         # Выполнение запроса на создание таблицы chats
         cursor.execute(create_chats_table_query)
         print("Таблица 'chats' создана или уже существует.")
+
+        # Таблица для хранения сессий агентов
+        create_sessions_table_query = """
+       CREATE TABLE IF NOT EXISTS sessions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            agent_id INT NOT NULL,
+            chat_type_id INT NOT NULL,
+            user_id INT NOT NULL ,
+            is_active BOOLEAN DEFAULT FALSE,
+            api_token VARCHAR(255) NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            is_deleted BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (agent_id) REFERENCES gpt_agents(id),
+            FOREIGN KEY (chat_type_id) REFERENCES chat_types(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+        """
+        # Выполнение запроса на создание таблицы sessions
+        cursor.execute(create_sessions_table_query)
+        print("Таблица 'sessions' создана или уже существует.")
 
 except Error as e:
     print(f"Ошибка подключения к базе данных: {e}")

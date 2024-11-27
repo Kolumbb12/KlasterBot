@@ -42,11 +42,16 @@ class DatabaseConnection:
         Выводит сообщение об успешном подключении или ошибке в случае неудачи.
         """
         try:
+            user = os.getenv('DB_USER')
+            password = os.getenv('DB_PASSWORD')
+            host = os.getenv('DB_HOST')
+            database = os.getenv('DB_NAME')
+
             self._connection = mysql.connector.connect(
-                user=os.getenv('DB_USER'),
-                password=os.getenv('DB_PASSWORD'),
-                host=os.getenv('DB_HOST'),
-                database=os.getenv('DB_NAME')
+                user=user,
+                password=password,
+                host=host,
+                database=database
             )
             print("Соединение с базой данных успешно установлено.")
         except sqlError as e:

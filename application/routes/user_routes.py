@@ -124,19 +124,23 @@ def change_password():
         flash("Пожалуйста, авторизуйтесь", "error")
         return redirect(url_for('user_bp.login'))
 
+    # Определяем user_id: либо из аргументов запроса, либо из сессии (для себя)
+    user_id = request.args.get('user_id') or session['user_id']
+
     if request.method == 'POST':
         new_password = request.form.get('new_password')
 
         if not new_password:
             flash("Пароль не может быть пустым", "error")
-            return redirect(url_for('user_bp.change_password'))
+            return redirect(url_for('user_bp.change_password', user_id=user_id))
 
-        user_id = session['user_id']
+        # Обновляем пароль для указанного пользователя
         update_user_password(user_id, new_password)
         flash("Пароль успешно изменен", "success")
-        return redirect(url_for('user_bp.user_profile'))
+        return redirect(url_for('user_bp.user_profile', user_id=user_id))
 
-    return render_template('change_password.html')
+    return render_template('change_password.html', user_id=user_id)
+
 
 
 @user_bp.route('/add_user', methods=['GET', 'POST'])

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Активные сессии{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sessions.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Активные сессии</h1>
+    <table class="sessions-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Агент</th>
+                <th>Платформа</th>
+                <th>Статус</th>
+                <th>Дата создания</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in user_sessions %}
+            <tr>
+                <td>{{ session.id }}</td>
+                <td>{{ session.agent_name }}</td>
+                <td>{{ session.platform }}</td>
+                <td>{{ 'Активна' if session.is_active else 'Неактивна' }}</td>
+                <td>{{ session.created_at }}</td>
+                <td>
+                    <a href="{{ url_for('session_bp.terminate_session', session_id=session.id) }}" class="terminate-button">Завершить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

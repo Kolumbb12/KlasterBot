@@ -8,6 +8,7 @@ from flask import Flask
 from application.routes.user_routes import user_bp
 from application.routes.agent_routes import agent_bp
 from application.routes.chat_routes import chat_bp
+from application.routes.session_routes import session_bp
 import os
 
 
@@ -30,5 +31,6 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(agent_bp)
     app.register_blueprint(chat_bp)
+    app.register_blueprint(session_bp)
 
     return app
