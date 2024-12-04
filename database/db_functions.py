@@ -400,7 +400,7 @@ def get_available_platforms(agent_id):
             SELECT ct.id, ct.name 
             FROM chat_types ct
             LEFT JOIN sessions s ON ct.id = s.chat_type_id AND s.agent_id = %s AND s.is_deleted = FALSE
-            WHERE s.id IS NULL
+            WHERE ct.id > 1 AND s.id IS NULL
         """, (agent_id,))
         platforms = cursor.fetchall()
         return platforms
@@ -411,21 +411,22 @@ def get_available_platforms(agent_id):
         cursor.close()
 
 
-def add_session(user_id, agent_id, chat_type_id):
+def add_session(user_id, agent_id, chat_type_id, api_token):
     """
     Создаёт новую запись сессии в таблице `sessions`.
     :param user_id: ID пользователя.
     :param agent_id: ID агента.
     :param chat_type_id: ID типа чата.
+    :param api_token: Токен бота.
     :return: ID созданной сессии.
     """
     try:
         connection = db_instance.get_connection()
         cursor = connection.cursor()
         cursor.execute("""
-            INSERT INTO sessions (user_id, agent_id, chat_type_id, is_active, created_at, updated_at)
-            VALUES (%s, %s, %s, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        """, (user_id, agent_id, chat_type_id))
+            INSERT INTO sessions (user_id, agent_id, chat_type_id, api_token, is_active, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """, (user_id, agent_id, chat_type_id, api_token))
         connection.commit()
         return cursor.lastrowid  # Возвращаем ID созданной сессии
     except Error as e:
@@ -434,3 +435,122 @@ def add_session(user_id, agent_id, chat_type_id):
     finally:
         cursor.close()
 
+
+def get_user_sessions(user_id):
+    """
+    Извлекает список активных сессий для указанного пользователя.
+    :param user_id: ID пользователя.
+    :return: Список сессий пользователя.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT s.id, s.agent_id, s.chat_type_id, s.is_active, s.created_at, s.updated_at, 
+                   a.name AS agent_name, ct.name AS platform
+            FROM sessions s
+            INNER JOIN gpt_agents a ON s.agent_id = a.id
+            INNER JOIN chat_types ct ON s.chat_type_id = ct.id
+            WHERE s.user_id = %s AND s.is_deleted = FALSE
+        """, (user_id,))
+        sessions = cursor.fetchall()
+        return sessions
+    except Error as e:
+        print(f"Ошибка при получении сессий пользователя: {e}")
+        return []
+    finally:
+        cursor.close()
+
+
+def get_all_active_sessions():
+    """
+    Извлекает список всех активных сессий из базы данных.
+    :return: Список активных сессий.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT id, agent_id, chat_type_id, api_token, is_active, created_at, updated_at
+            FROM sessions
+            WHERE is_active = TRUE AND is_deleted = FALSE
+        """)
+        sessions = cursor.fetchall()
+        return sessions
+    except Error as e:
+        print(f"Ошибка при получении активных сессий: {e}")
+        return []
+    finally:
+        cursor.close()
+
+
+def get_session_by_id(session_id):
+    """
+    Извлекает информацию о сессии по её ID.
+    :param session_id: ID сессии.
+    :return: Словарь с данными сессии или None, если сессия не найдена.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT s.id, s.agent_id, s.chat_type_id, s.is_active, s.api_token, 
+                   s.created_at, s.updated_at, a.name AS agent_name, ct.name AS platform
+            FROM sessions s
+            INNER JOIN gpt_agents a ON s.agent_id = a.id
+            INNER JOIN chat_types ct ON s.chat_type_id = ct.id
+            WHERE s.id = %s AND s.is_deleted = FALSE
+        """, (session_id,))
+        session = cursor.fetchone()
+        return session
+    except Error as e:
+        print(f"Ошибка при получении данных сессии: {e}")
+        return None
+    finally:
+        cursor.close()
+
+
+def activate_session_in_db(session_id):
+    """
+    Активирует сессию в базе данных, устанавливая is_active в TRUE.
+    :param session_id: ID сессии.
+    :return: True, если сессия успешно активирована, иначе False.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor()
+        cursor.execute("""
+            UPDATE sessions
+            SET is_active = TRUE, updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s AND is_deleted = FALSE
+        """, (session_id,))
+        connection.commit()
+        return cursor.rowcount > 0  # Возвращает True, если хотя бы одна строка была обновлена
+    except Error as e:
+        print(f"Ошибка при активации сессии: {e}")
+        return False
+    finally:
+        cursor.close()
+
+
+def terminate_session_in_db(session_id):
+    """
+    Завершает активную сессию в базе данных, устанавливая is_active в FALSE.
+    :param session_id: ID сессии.
+    :return: True, если сессия успешно завершена, иначе False.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor()
+        cursor.execute("""
+            UPDATE sessions
+            SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s AND is_deleted = FALSE
+        """, (session_id,))
+        connection.commit()
+        return cursor.rowcount > 0  # Возвращает True, если хотя бы одна строка была обновлена
+    except Error as e:
+        print(f"Ошибка при завершении сессии: {e}")
+        return False
+    finally:
+        cursor.close()

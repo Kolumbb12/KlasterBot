@@ -6,7 +6,9 @@ gpt_api.py
 
 import openai
 from database.db_functions import select_agent_by_id
-from application.utils import convert_decimals
+from utils.utils import convert_decimals
+from utils.logs.logger import logger
+
 
 def get_openai_api_key(agent_id):
     """
@@ -21,6 +23,7 @@ def get_openai_api_key(agent_id):
         return agent['api_key']
     else:
         raise ValueError("API-ключ не найден для указанного агента.")
+
 
 def generate_response(agent_id, user_input, conversation_history):
     """
@@ -45,6 +48,8 @@ def generate_response(agent_id, user_input, conversation_history):
     temperature = convert_decimals(agent['temperature'])
     max_tokens = agent['max_tokens']
 
+    user_input = str(user_input).encode("utf-8").decode("utf-8")  # Убедимся в корректной кодировке
+
     # Формируем историю сообщений для OpenAI API
     messages = [{"role": "system", "content": prompt}] + conversation_history + [{"role": "user", "content": user_input}]
 
@@ -60,7 +65,11 @@ def generate_response(agent_id, user_input, conversation_history):
     response_data = {
         "response": response.choices[0].message['content']
     }
-
     # Преобразуем возможные значения Decimal в float для предотвращения ошибок
     response_data = convert_decimals(response_data)
+
+    response_data['response'] = str(response_data['response']).encode("utf-8").decode("utf-8")  # Убедимся в корректной кодировке
+
+    logger.log(f"Данные сгенерированного ответа: {response_data['response']}")
+
     return response_data['response']

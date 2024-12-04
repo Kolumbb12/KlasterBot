@@ -1,82 +1,92 @@
-/* assign_platform.css */
-
-/* Основной контейнер для страницы */
 .container {
-    max-width: 800px;
-    margin: 50px auto;
+    max-width: 600px;
+    margin: 0 auto;
     padding: 20px;
-    background-color: #2A2A40;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #222; /* Темный фон для контейнера */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Больше контраста в тени */
+    font-family: 'Arial', sans-serif;
+    color: #fff; /* Белый текст */
 }
 
-/* Заголовок страницы */
 h1 {
-    text-align: center;
     font-size: 24px;
     margin-bottom: 20px;
-    color: #FFFFFF;
+    color: #e0e0e0; /* Светло-серый текст */
+    text-align: center;
 }
 
-/* Формы */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* Метка для select */
 label {
-    font-size: 16px;
-    color: #CCCCCC;
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+    color: #b3b3b3; /* Нежно-серый цвет для текста меток */
 }
 
-/* Стиль для select */
-select {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: none;
-    background-color: #3C3C54;
-    color: #FFFFFF;
+select, input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #444; /* Серый бордер */
+    border-radius: 4px;
+    background-color: #333; /* Темный фон для полей */
+    color: #fff; /* Белый текст */
+    font-size: 14px;
+}
+
+input {
+    width: 575px;
+}
+
+input::placeholder {
+    color: #777; /* Цвет плейсхолдера */
+}
+
+input:focus, select:focus {
+    border-color: #9F7AEA; /* Бордер при фокусе */
     outline: none;
+    box-shadow: 0 0 5px rgba(183, 68, 191, 0.5); /* Зеленая подсветка */
 }
 
-/* Кнопка назначения */
-button[type="submit"] {
-    padding: 10px 20px;
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #9F7AEA; /* Зеленый цвет кнопки */
+    color: #fff; /* Белый текст */
     font-size: 16px;
     font-weight: bold;
     border: none;
-    border-radius: 5px;
-    background-color: #4CAF50;
-    color: #FFFFFF;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease-in-out, transform 0.2s;
 }
 
-/* Hover эффект для кнопки */
-button[type="submit"]:hover {
-    background-color: #45A049;
+button:hover {
+    background-color: #9943bf; /* Более темный зеленый при наведении */
+    transform: scale(1.02); /* Легкое увеличение */
 }
 
-/* Фокус на select */
-select:focus {
-    border: 2px solid #9F7AEA;
-    outline: none;
+#token-field {
+    display: none; /* Скрыто по умолчанию */
+    margin-top: 10px;
 }
 
-/* Адаптивность для маленьких экранов */
-@media (max-width: 600px) {
+#error-message {
+    color: #ff6b6b; /* Яркий красный цвет для ошибок */
+    font-size: 12px;
+    margin-top: -10px;
+    margin-bottom: 15px;
+    display: none;
+    text-align: left;
+}
+
+@media (max-width: 768px) {
     .container {
         padding: 15px;
     }
 
-    h1 {
-        font-size: 20px;
-    }
-
-    select, button[type="submit"] {
+    button {
         font-size: 14px;
+        padding: 10px;
     }
 }

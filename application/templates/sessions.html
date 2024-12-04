@@ -29,7 +29,17 @@
                 <td>{{ 'Активна' if session.is_active else 'Неактивна' }}</td>
                 <td>{{ session.created_at }}</td>
                 <td>
-                    <a href="{{ url_for('session_bp.terminate_session', session_id=session.id) }}" class="terminate-button">Завершить</a>
+                    {% if session.is_active %}
+                        <form method="POST" action="{{ url_for('session_bp.terminate_session', session_id=session.id) }}" style="display:inline;">
+                            <button type="submit" class="terminate-button red-button">Завершить</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('session_bp.activate_session', session_id=session.id) }}" style="display:inline;">
+                            <button type="submit" class="activate-button green-button">Включить</button>
+                        </form>
+                    {% endif %}
+                    <br>
+                    <a href="{{ url_for('session_bp.configure_session', session_id=session.id) }}" class="configure-button purple-button">Настроить</a>
                 </td>
             </tr>
             {% endfor %}

@@ -6,7 +6,7 @@ chat_routes.py
 
 from database.db_functions import *
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, jsonify
-from web_clients.gpt_api import generate_response
+from utils.web_clients.gpt_api import generate_response
 
 
 # Создаем blueprint для маршрутов, связанных с чатом
