@@ -1,39 +1,4 @@
-2024-12-04 15:46:33,942:bot_manager.py:start_all_bots:92:INFO:Начало запуска всех ботов...
-2024-12-04 15:46:34,008:bot_manager.py:start_all_bots:106:INFO:Попытка запуска бота для сессии 3
-2024-12-04 15:46:34,010:bot_manager.py:start_bot:37:INFO:Создание потока для бота сессии 3
-2024-12-04 15:46:34,011:bot_manager.py:start_bot:41:INFO:Поток для бота сессии 3 добавлен в active_bots
-2024-12-04 15:46:34,013:bot_manager.py:start_all_bots:109:INFO:Все активные боты обработаны.
-2024-12-04 15:46:34,013:run.py:start_bot_manager:32:INFO:Все активные боты запущены.
-2024-12-04 15:46:34,384:runner.py:start_telegram_bot:12:INFO:Инициализация Telegram бота для сессии 3
-2024-12-04 15:46:34,482:runner.py:start_telegram_bot:32:INFO:Обработчик команды /start зарегистрирован
-2024-12-04 15:46:34,483:runner.py:start_telegram_bot:52:INFO:Обработчик сообщений зарегистрирован
-2024-12-04 15:46:34,485:runner.py:start_telegram_bot:61:INFO:Запуск polling для Telegram бота сессии 3
-2024-12-04 15:46:44,474:runner.py:handle_message:38:INFO:Получено сообщение от пользователя 861764430: Привет
-2024-12-04 15:46:44,477:runner.py:handle_message:40:INFO:История пользователя 861764430: [{'role': 'user', 'content': 'Привет'}]
-2024-12-04 15:46:44,786:runner.py:handle_message:48:ERROR:Ошибка при обработке сообщения: 'latin-1' codec can't encode characters in position 7-17: ordinal not in range(256)
-2024-12-04 15:48:12,811:bot_manager.py:start_bot:37:INFO:Создание потока для бота сессии 1
-2024-12-04 15:48:12,815:bot_manager.py:start_bot:41:INFO:Поток для бота сессии 1 добавлен в active_bots
-2024-12-04 15:48:13,260:runner.py:start_telegram_bot:12:INFO:Инициализация Telegram бота для сессии 1
-2024-12-04 15:48:13,266:runner.py:start_telegram_bot:32:INFO:Обработчик команды /start зарегистрирован
-2024-12-04 15:48:13,268:runner.py:start_telegram_bot:52:INFO:Обработчик сообщений зарегистрирован
-2024-12-04 15:48:13,270:runner.py:start_telegram_bot:61:INFO:Запуск polling для Telegram бота сессии 1
-2024-12-04 15:48:13,943:runner.py:handle_start:23:INFO:Получена команда /start от пользователя 861764430
-2024-12-04 15:48:21,496:runner.py:handle_message:38:INFO:Получено сообщение от пользователя 861764430: Привет!
-2024-12-04 15:48:21,499:runner.py:handle_message:40:INFO:История пользователя 861764430: [{'role': 'user', 'content': 'Привет!'}]
-2024-12-04 15:48:23,547:gpt_api.py:generate_response:73:INFO:Данные сгенерированного ответа: Здравствуйте! Меня зовут Артем, я менеджер по продажам компании Klaster WEB. Как я могу Вам помочь? Вы заинтересованы в создании сайта, рекламе в интернете или SEO продвижении?
-2024-12-04 15:48:23,549:runner.py:handle_message:48:ERROR:Ошибка при обработке сообщения: name 'response_data' is not defined
-2024-12-04 15:48:52,052:bot_manager.py:stop_all_bots:115:INFO:Остановка всех ботов...
-2024-12-04 15:48:52,053:bot_manager.py:stop_all_bots:121:INFO:Попытка остановить бота для сессии 3
-2024-12-04 15:48:52,054:bot_manager.py:stop_bot:52:INFO:Попытка остановить бота для сессии 3
-2024-12-04 15:48:52,056:runner.py:stop_telegram_bot:72:INFO:Остановка Telegram бота для сессии 3
-2024-12-04 15:48:52,317:runner.py:start_telegram_bot:63:INFO:Polling для Telegram бота сессии 3 завершен.
-2024-12-04 15:48:52,319:runner.py:stop_telegram_bot:82:INFO:Сессия Telegram бота для сессии 3 закрыта.
-2024-12-04 15:48:57,067:bot_manager.py:stop_bot:68:ERROR:Ошибка при остановке Telegram бота для сессии 3: 
-2024-12-04 15:48:57,070:bot_manager.py:stop_bot:74:INFO:Event loop для бота сессии 3 закрыт.
-2024-12-04 15:48:57,072:bot_manager.py:stop_bot:86:INFO:Поток для бота сессии 3 уже завершён.
-2024-12-04 15:48:57,073:bot_manager.py:stop_all_bots:123:INFO:Результат остановки бота для сессии 3:
-2024-12-04 15:48:57,074:bot_manager.py:stop_all_bots:121:INFO:Попытка остановить бота для сессии 1
-2024-12-04 15:48:57,075:bot_manager.py:stop_bot:52:INFO:Попытка остановить бота для сессии 1
-2024-12-04 15:48:57,077:runner.py:stop_telegram_bot:72:INFO:Остановка Telegram бота для сессии 1
-2024-12-04 15:48:57,332:runner.py:start_telegram_bot:63:INFO:Polling для Telegram бота сессии 1 завершен.
-2024-12-04 15:48:57,334:runner.py:stop_telegram_bot:82:INFO:Сессия Telegram бота для сессии 1 закрыта.
+2024-12-06 20:02:06,691:bot_manager.py:start_bot:20:INFO:Бот 5 успешно запущен
+2024-12-06 20:14:12,442:bot_manager.py:start_bot:20:INFO:Бот 5 успешно запущен
+2024-12-06 20:14:55,163:bot_manager.py:start_bot:20:INFO:Бот 1 успешно запущен
+2024-12-06 20:15:09,139:bot_manager.py:start_bot:22:ERROR:Бот 5 не запущен, ошибка: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Multiple exceptions: [WinError 121] Превышен таймаут семафора, [WinError 1231] Сетевая папка недоступна. За информацией о разрешении проблем в сети обратитесь к справочной системе Windows]

@@ -336,6 +336,41 @@ def get_chat_history_by_user_and_agent(user_id, agent_id, chat_type_id):
         cursor.close()
 
 
+def get_chat_history_by_session(session_id):
+    """
+    Извлекает историю чата для заданной сессии в Telegram.
+
+    :param session_id: ID сессии, для которой требуется история чата.
+    :return: Список словарей с сообщениями чата, где каждое сообщение включает роль (user или assistant) и текст сообщения (content).
+             Если история пуста, возвращается пустой список.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        query = """
+        SELECT user_message, bot_response 
+        FROM chats
+        WHERE session_id = %s AND is_deleted = FALSE
+        ORDER BY created_at
+        """
+        cursor.execute(query, (session_id,))
+        history = cursor.fetchall()
+
+        # Формируем список словарей для передачи истории чата в шаблон
+        conversation_history = []
+        for record in history:
+            if record['user_message']:
+                conversation_history.append({"role": "user", "content": record['user_message']})
+            if record['bot_response']:
+                conversation_history.append({"role": "assistant", "content": record['bot_response']})
+        return conversation_history
+
+    except Error as e:
+        print(f"Ошибка при чтении истории чата: {e}")
+    finally:
+        cursor.close()
+
+
 def insert_chat_message(user_id, agent_id, chat_type_id, user_message, bot_response):
     """
     Вставляет новое сообщение чата в базу данных.
@@ -354,6 +389,32 @@ def insert_chat_message(user_id, agent_id, chat_type_id, user_message, bot_respo
         VALUES (%s, %s, %s, %s, %s)
         """
         cursor.execute(query, (user_id, agent_id, chat_type_id, user_message, bot_response))
+        connection.commit()
+    except Error as e:
+        print(f"Ошибка при записи истории чата: {e}")
+    finally:
+        cursor.close()
+
+
+def insert_chat_message_for_session(user_id, agent_id, chat_type_id, session_id, user_message, bot_response):
+    """
+    Вставляет новое сообщение чата для Telegram с учетом session_id.
+
+    :param session_id: ID сессии, для которой вставляется сообщение.
+    :param user_id: ID пользователя, отправившего сообщение.
+    :param agent_id: ID агента, участвующего в чате.
+    :param chat_type_id: ID типа чата.
+    :param user_message: Текст сообщения пользователя.
+    :param bot_response: Текст ответа бота.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        query = """
+        INSERT INTO chats (user_id, agent_id, chat_type_id, session_id, user_message, bot_response)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (user_id, agent_id, chat_type_id, session_id, user_message, bot_response))
         connection.commit()
     except Error as e:
         print(f"Ошибка при записи истории чата: {e}")
@@ -554,3 +615,30 @@ def terminate_session_in_db(session_id):
         return False
     finally:
         cursor.close()
+
+
+def get_telegram_bot_token_api_by_session_id(session_id):
+    """
+    Извлекает токен API Telegram бота из базы данных по session_id.
+    :param session_id: ID сессии.
+    :return: Токен API, если найден, иначе None.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor()
+        cursor.execute("""
+            SELECT api_token
+            FROM sessions
+            WHERE id = %s AND is_deleted = FALSE
+        """, (session_id,))
+        result = cursor.fetchone()
+        if result:
+            return result[0]  # Возвращаем значение из первой колонки (api_token)
+        else:
+            return None
+    except Error as e:
+        print(f"Ошибка при извлечении токена API для сессии {session_id}: {e}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()

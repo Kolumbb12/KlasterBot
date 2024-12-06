@@ -70,6 +70,4 @@ def generate_response(agent_id, user_input, conversation_history):
 
     response_data['response'] = str(response_data['response']).encode("utf-8").decode("utf-8")  # Убедимся в корректной кодировке
 
-    logger.log(f"Данные сгенерированного ответа: {response_data['response']}")
-
     return response_data['response']

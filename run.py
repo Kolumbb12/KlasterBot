@@ -11,36 +11,52 @@ run.py
 чтобы гарантировать корректное завершение соединения.
 """
 
-import asyncio
 from application.app import create_app
 from database.db_connection import db_instance
-import atexit
-from application.services.telegram.bot_manager import bot_manager
 from utils.logs.logger import logger
+from application.services.telegram.bot_manager import bot_manager
+from database.db_functions import get_all_active_sessions
+import asyncio
+import threading
+import atexit
 
 
-# Инициализация Flask-приложения
-app = create_app()
+# Создаем Flask-приложение
+flask_app = create_app()
 
+# Главный событийный цикл asyncio
+main_event_loop = asyncio.new_event_loop()
+flask_app.config["event_loop"] = main_event_loop
 
-def start_bot_manager():
-    """
-    Запускает все активные боты в потоках.
-    """
-    try:
-        bot_manager.start_all_bots()
-        logger.log("Все активные боты запущены.")
-    except Exception as e:
-        logger.log(f"Ошибка при запуске ботов: {e}", "ERROR")
-
-
-# Регистрируем функцию завершения через atexit
+# Регистрация функции завершения соединения с базой
 atexit.register(db_instance.teardown)
-atexit.register(bot_manager.stop_all_bots)  # Остановка ботов при завершении Flask
 
 
-# Запуск сервера
-if __name__ == '__main__':
-    # Запускаем ботов до старта Flask
-    start_bot_manager()
-    app.run(debug=True, use_reloader=False)
+async def start_all_bots():
+    """
+    Асинхронный запуск всех активных ботов.
+    """
+    active_sessions = get_all_active_sessions()
+    await bot_manager.start_all_bots(active_sessions)
+
+
+def run_flask():
+    """
+    Запуск Flask в отдельном потоке.
+    """
+    flask_app.run(debug=True, use_reloader=False)
+
+
+if __name__ == "__main__":
+    try:
+        # Запускаем всех активных ботов в главном цикле событий
+        asyncio.run_coroutine_threadsafe(start_all_bots(), main_event_loop)
+
+        # Запускаем Flask в отдельном потоке
+        flask_thread = threading.Thread(target=run_flask)
+        flask_thread.start()
+
+        # Запускаем основной событийный цикл
+        main_event_loop.run_forever()
+    except Exception as e:
+        logger.log(f"Ошибка при запуске ботов или Flask: {e}", "ERROR")
