@@ -4,11 +4,15 @@ import traceback
 import os
 import inspect
 from datetime import datetime
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 class Logger:
 
-    def __init__(self, log_file="utils/logs/application.log"):
+    def __init__(self, log_file=os.getenv("LOGS_PATH")):
         self.lock = threading.Lock()  # Для управления доступом
         self.log_file = log_file
 

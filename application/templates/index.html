@@ -1,0 +1,18 @@
+<!--
+index.html
+Главная страница проекта Flask.
+Содержит анимацию сетки и кнопку "НАЧАТЬ" с вращением.
+-->
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<div id="animation-container">
+    <canvas id="network-canvas"></canvas>
+    <a href="{{ url_for('user_bp.login') }}" class="start-button">НАЧАТЬ</a>
+</div>
+{% endblock %}
+
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>

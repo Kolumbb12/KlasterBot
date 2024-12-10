@@ -1,0 +1,59 @@
+/* index.css */
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #6a0dad;
+}
+
+#animation-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#network-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.start-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    z-index: 2;
+    background-color: #000;
+    color: #fff;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    text-decoration: none;
+    text-align: center;
+    animation: rotate-button 5s linear infinite;
+    cursor: pointer;
+}
+
+.start-button:hover {
+    background-color: #222;
+}
+
+@keyframes rotate-button {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}

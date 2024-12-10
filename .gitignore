@@ -1,3 +1,6 @@
-.idea
 .env
-.venv
+.idea
+__pycache__
+venv
+bots_sessions
+users_sessions

@@ -31,6 +31,27 @@ def select_user_by_id(user_id):
         cursor.close()
 
 
+def get_user_by_username(username):
+    """
+    Извлекает данные пользователя по его имени пользователя.
+
+    :param username: Имя пользователя, данные которого нужно получить.
+    :return: Словарь с данными пользователя (username, пароль, имя и т.д.), если пользователь существует.
+    Возвращает None, если пользователь не найден.
+    """
+    try:
+        connection = db_instance.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE username = %s AND is_deleted = FALSE", (username,))
+        user = cursor.fetchone()
+        return user
+    except Error as e:
+        print(f"Ошибка при получении пользователя: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+
+
 def get_all_users():
     """
     Извлекает список всех активных пользователей (которые не были помечены как удаленные).

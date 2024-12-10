@@ -1,3 +1,21 @@
+"""
+runner.py
+Модуль для запуска и управления Telegram-ботами с использованием библиотеки Aiogram.
+
+Этот файл содержит класс `BotRunner`, который позволяет запускать бота на вебхуке с использованием aiohttp-сервера.
+Он включает методы для обработки команд и сообщений, а также для остановки бота.
+
+Основные функции:
+1. **start_webhook**:
+   - Настроить и запустить сервер с использованием aiohttp для обработки запросов Telegram.
+   - Обработать команду `/start`, отправляя приветственное сообщение.
+   - Обрабатывать все входящие сообщения, генерируя ответ с использованием GPT API и записывая историю чата в базу данных.
+2. **stop_webhook**:
+   - Остановить работу бота, удалив вебхук и завершив сессию.
+
+Для каждого бота создается уникальный сервер с портом, основанным на идентификаторе сессии.
+"""
+
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message
@@ -18,7 +36,7 @@ class BotRunner:
         self.bot = Bot(token=self.token, skip_updates=False)  # Инициализация бота
         self.dp = Dispatcher()  # Инициализация диспетчера
         self.dp["bot"] = self.bot  # Добавление бота в контекст диспетчера
-        self.webhook_url = f"https://06e7-91-231-66-4.ngrok-free.app/webhook/{self.session_id}"
+        self.webhook_url = f"https://7c0d-2a0d-b201-1019-31b4-6571-c2a1-d6f-c946.ngrok-free.app/webhook/{self.session_id}"
 
     async def start_webhook(self):
         """

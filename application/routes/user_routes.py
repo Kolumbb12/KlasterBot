@@ -14,6 +14,15 @@ from database.db_connection import db_instance
 user_bp = Blueprint('user_bp', __name__)
 
 
+@user_bp.route('/', methods=['GET'])
+def index():
+    """
+    Маршрут главной страницы.
+    Отображает анимацию сетки с кнопкой "НАЧАТЬ".
+    """
+    return render_template('index.html')
+
+
 @user_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """
@@ -26,28 +35,13 @@ def login():
     :return: Шаблон login.html для GET-запросов или перенаправление при успешном входе.
     """
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username')
+        password = request.form.get('password')
 
-        try:
-            # Подключение к базе данных и поиск пользователя
-            connection = db_instance.get_connection()
-            cursor = connection.cursor(dictionary=True)
-
-            query = "SELECT * FROM users WHERE username = %s"
-            cursor.execute(query, (username,))
-            user = cursor.fetchone()
-
-        except Error as e:
-            print(f"Ошибка при записи истории чата: {e}")
-        finally:
-            cursor.close()
-
-        # Проверка существования пользователя и соответствия пароля
+        user = get_user_by_username(username)
         if user and user['password'] == password:
             session['user_id'] = user['id']
             session['is_admin'] = bool(user['is_admin'])
-
             flash('Вы успешно вошли на сайт', 'success')
             return redirect(url_for('agent_bp.agent_selection'))
         else:
