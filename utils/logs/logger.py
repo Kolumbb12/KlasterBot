@@ -44,5 +44,4 @@ class Logger:
                 file.write(log_entry + "\n")
 
 
-# Создаём логгер
 logger = Logger()

@@ -1,10 +1,3 @@
-<!--
-agent_selection.html
-Шаблон HTML для страницы отображения списка агентов пользователя.
-Предоставляет список всех агентов, созданных пользователем, с возможностью настройки
-и изменения их статуса (включить/выключить).
--->
-
 {% extends "base.html" %}
 
 {% block title %}Мои агенты{% endblock %}
@@ -24,14 +17,10 @@ agent_selection.html
             <p>ID: {{ agent.id }}</p>
             <p class="agent-status">Агент {{ 'включен' if agent.is_active else 'выключен' }}</p>
             <div class="agent-actions">
-                <!-- Кнопка для перехода к настройкам агента -->
                 <button onclick="location.href='{{ url_for('agent_bp.agent_settings', agent_id=agent.id) }}'" class="settings-button">⚙ Настроить агента</button>
-
                 <button onclick="location.href='{{ url_for('session_bp.assign_platform', agent_id=agent.id) }}'" class="assign-platform-button">
                     Назначить
                 </button>
-
-                <!-- Кнопка для переключения статуса агента (включен/выключен) -->
                 <br><a href="{{ url_for('agent_bp.toggle_agent_status', agent_id=agent.id) }}">
                     <button class="{{ 'active' if agent.is_active else 'inactive' }}">
                         {{ 'Выключить' if agent.is_active else 'Включить' }}
@@ -41,5 +30,34 @@ agent_selection.html
         </div>
         {% endfor %}
     </div>
+
+    {% if session.get('role_id') == 1 %}
+    <h2>Все агенты</h2>
+    <div class="agent-grid">
+        {% for agent in other_agents %}
+        <!-- Карточка для агентов других пользователей -->
+        <div class="agent-card">
+            <h2>{{ agent.name }}</h2>
+            <p>ID: {{ agent.id }}</p>
+            <div class="tooltip">
+                <p>Пользователь: {{ agent.user_name }}</p>
+                <span class="tooltip-text">{{ agent.user_name }}</span>
+            </div>
+            <p class="agent-status">Агент {{ 'включен' if agent.is_active else 'выключен' }}</p>
+            <div class="agent-actions">
+                <button onclick="location.href='{{ url_for('agent_bp.agent_settings', agent_id=agent.id) }}'" class="settings-button">⚙ Настроить агента</button>
+                <button onclick="location.href='{{ url_for('session_bp.assign_platform', agent_id=agent.id) }}'" class="assign-platform-button">
+                    Назначить
+                </button>
+                <br><a href="{{ url_for('agent_bp.toggle_agent_status', agent_id=agent.id) }}">
+                    <button class="{{ 'active' if agent.is_active else 'inactive' }}">
+                        {{ 'Выключить' if agent.is_active else 'Включить' }}
+                    </button>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

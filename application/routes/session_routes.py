@@ -13,16 +13,17 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from database.db_functions import *
 from application.services.telegram.bot_manager import bot_manager
 from utils.logs.logger import logger
-from utils.utils import create_update_from_json
+from utils.utils import create_update_from_json, get_telegram_bot_name_and_username_by_token
 from aiogram.types import Update
 from flask import current_app
+from application.services.telegram.bot_configurator import *
+from werkzeug.utils import secure_filename
 
 
 # Создаём Blueprint для маршрутов, связанных с управлением сессиями
 session_bp = Blueprint('session_bp', __name__)
 
 
-# Маршрут для отображения страницы выбора платформы для агента
 @session_bp.route('/sessions/assign/<int:agent_id>', methods=['GET'])
 def assign_platform(agent_id):
     """
@@ -32,15 +33,14 @@ def assign_platform(agent_id):
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
     try:
-        agent = select_agent_by_id(agent_id)  # Получение информации об агенте
-        platforms = get_available_platforms(agent_id)  # Получение списка доступных платформ
+        agent = select_agent_by_id(agent_id)
+        platforms = get_available_platforms(agent_id)
         return render_template('assign_platform.html', agent=agent, platforms=platforms)
     except Exception as e:
         flash(f"Ошибка при загрузке страницы назначения платформы: {e}", "error")
         return redirect(url_for('session_bp.sessions'))
 
 
-# Маршрут для создания новой сессии
 @session_bp.route('/sessions/create/<int:agent_id>', methods=['POST'])
 def create_session(agent_id):
     """
@@ -51,48 +51,78 @@ def create_session(agent_id):
         return redirect(url_for('user_bp.login'))
     try:
         user_id = session['user_id']
-        platform_id = int(request.form.get('platform'))  # Получение chat_type_id из формы
-        api_token = request.form.get('api_token', '').strip()  # Получение токена платформы
+        platform_id = int(request.form.get('platform'))
+        setup_mode = request.form.get('setup_mode')  # Ручная или автоматическая установка
 
-        # Проверка на обязательность токена для Telegram (bot)
-        if platform_id == 2 and not api_token:
-            flash("Для Telegram (bot) необходимо указать токен.", "error")
+        # Если выбран Telegram (Бот)
+        if platform_id == 2:
+            # Если выбрана ручная установка, токен обязателен
+            if setup_mode == "manual":
+                api_token = request.form.get('api_token', '').strip()
+                if not api_token:
+                    flash("Для Telegram (бот) при ручной установке необходимо указать токен.", "error")
+                    return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+                if not is_valid_telegram_token(api_token):
+                    flash("Указан не валидный токен. Пожалуйста, укажите корректный токен.", "error")
+                    return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+                if is_telegram_token_api_exists(api_token):
+                    flash("Указанный токен уже используется. Пожалуйста, укажите другой.", "error")
+                    return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+                bot_name, bot_username = get_telegram_bot_name_and_username_by_token(api_token)
+            # Если выбрана автоматическая установка
+            if setup_mode == "auto":
+                bot_name = request.form.get('bot_name')
+                bot_username = request.form.get('bot_username')
+                # Проверка обязательных полей
+                if not bot_name or not bot_username:
+                    flash("Наименование и username бота обязательны для автоматической установки.", "error")
+                    return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+                # Создание бота
+                api_token = run_async_task(create_bot(bot_name, bot_username))
+                if "Ошибка" in api_token:
+                    flash(api_token, "error")
+                    return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+            # Создание сессии
+            session_id = add_session(user_id, agent_id, platform_id)
+            if session_id is None:
+                flash("Не удалось создать сессию. Пожалуйста, повторите попытку.", "error")
+                return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+            flash(f"Сессия {session_id} успешно создана.", "success")
+            # Привязка вебхука и сохранение бота
+            webhook_port = get_last_webhook_port()
+            add_telegram_bot(session_id, api_token, bot_name, f'@{bot_username}', webhook_port)
+            flash('Бот успешно создан!', 'success')
+        if platform_id in [3, 4, 5]:
+            flash("Функционал ещё не реализован, вернитесь позже.", "error")
             return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
 
-        # Создание новой сессии
-        session_id = add_session(user_id, agent_id, platform_id, api_token)
-
-        flash("Сессия успешно создана.", "success")
         return redirect(url_for('session_bp.sessions'))
-
     except Exception as e:
         flash(f"Ошибка при создании сессии: {e}", "error")
-        return redirect(url_for('session_bp.sessions'))
+        logger.log(f"Ошибка при создании сессии: {e}", "ERROR")
+        return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
 
 
-# Маршрут для отображения списка активных сессий
 @session_bp.route('/sessions', methods=['GET'])
 def sessions():
     """
     Отображение всех активных сессий текущего пользователя.
+    Если пользователь является администратором, отображаются все сессии, кроме его собственных.
     """
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
-        return redirect(url_for('user_bp.login'))  # Убедитесь, что 'user_bp.login' корректен
-
+        return redirect(url_for('user_bp.login'))
     try:
-        user_id = session.get('user_id')  # Получение ID текущего пользователя
-        user_sessions = get_user_sessions(user_id)  # Получение списка сессий пользователя
-
-        # Если сессии не найдены, просто показываем пустую таблицу
-        if user_sessions is None:
-            user_sessions = []
-
-        return render_template('sessions.html', user_sessions=user_sessions)
-
+        user_id = session.get('user_id')
+        user_sessions = get_user_sessions(user_id)
+        # Если пользователь администратор, добавляем все сессии, кроме его
+        all_sessions = []
+        if session.get('role_id') == 1:
+            all_sessions = get_all_sessions_except_admin(user_id)
+        return render_template('sessions.html', user_sessions=user_sessions, all_sessions=all_sessions)
     except Exception as e:
         flash(f"Ошибка при загрузке списка сессий: {e}", "error")
-        return redirect(url_for('agent_bp.agent_selection'))  # Избегаем перенаправления на сам /sessions
+        return redirect(url_for('agent_bp.agent_selection'))
 
 
 @session_bp.route('/webhook/<int:session_id>', methods=['POST'])
@@ -104,16 +134,10 @@ def webhook(session_id):
     if not bot_runner:
         logger.log(f"Bot for session {session_id} not found", level="ERROR")
         return jsonify({"error": "Bot not found"}), 404
-
-    # Получаем JSON-данные из запроса
     update_data = request.get_json()
-
     try:
-        # Преобразуем JSON-данные в объект Update с помощью собственной функции
         update = create_update_from_json(update_data)
-
-        # Обрабатываем обновление через диспетчер
-        loop = current_app.config["event_loop"]  # Используем event_loop из конфигурации Flask
+        loop = current_app.config["event_loop"]
         asyncio.run_coroutine_threadsafe(
             bot_runner.dp.feed_update(bot_runner.bot, update), loop
         )
@@ -135,7 +159,7 @@ def activate_session(session_id):
         user_session = get_session_by_id(session_id)
         if user_session:
             token = user_session['api_token']
-            port = 5001 + session_id
+            port = user_session['webhook_port']
             asyncio.run_coroutine_threadsafe(bot_manager.start_bot(session_id, token, port), current_app.config["event_loop"])
             activate_session_in_db(session_id)
             flash(f"Сессия {session_id} успешно активирована!", "success")
@@ -173,16 +197,12 @@ def configure_session(session_id):
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
-
     try:
         user_session = get_session_by_id(session_id)
         if not user_session:
             flash("Сессия не найдена.", "error")
             return redirect(url_for('session_bp.sessions'))
-
-        # Логика для получения данных настройки сессии
         return render_template('configure_session.html', user_session=user_session)
-
     except Exception as e:
         flash(f"Ошибка при настройке сессии: {e}", "error")
         return redirect(url_for('session_bp.sessions'))

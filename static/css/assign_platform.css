@@ -27,7 +27,7 @@ select, input {
     width: 100%;
     padding: 12px;
     margin-bottom: 15px;
-    border: 1px solid #444; /* Серый бордер */
+    border: 1px solid #444;
     border-radius: 4px;
     background-color: #333; /* Темный фон для полей */
     color: #fff; /* Белый текст */
@@ -39,11 +39,11 @@ input {
 }
 
 input::placeholder {
-    color: #777; /* Цвет плейсхолдера */
+    color: #777;
 }
 
 input:focus, select:focus {
-    border-color: #9F7AEA; /* Бордер при фокусе */
+    border-color: #9F7AEA;
     outline: none;
     box-shadow: 0 0 5px rgba(183, 68, 191, 0.5); /* Зеленая подсветка */
 }
@@ -78,6 +78,24 @@ button:hover {
     margin-bottom: 15px;
     display: none;
     text-align: left;
+}
+
+#manual-setup, #auto-setup {
+    margin-top: 20px;
+}
+
+textarea {
+    width: 575px;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
+    min-height: 40px;
+    overflow: hidden;
+    resize: none;
 }
 
 @media (max-width: 768px) {

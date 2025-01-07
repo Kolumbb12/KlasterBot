@@ -21,20 +21,47 @@ base.html
 <body>
     <!-- Боковая панель навигации -->
     <div class="sidebar">
-        <div class="logo">KLASTERBOT</div>
-        <nav class="menu">
-            <a href="{{ url_for('agent_bp.agent_selection') }}" class="menu-item">Мои агенты</a>
-            <a href="{{ url_for('session_bp.sessions') }}" class="menu-item">Сессии</a>
-            <a href="{{ url_for('agent_bp.agent_settings') }}" class="menu-item">Создать агента</a>
-            <a href="{{ url_for('chat_bp.chat') }}" class="menu-item">Чат</a>
-            <a href="{{ url_for('user_bp.user_profile') }}" class="menu-item">Профиль</a>
-            {% if session.get('is_admin') %}
-                <!-- Доступ к этим пунктам меню имеет только администратор -->
-                <a href="{{ url_for('user_bp.add_user') }}" class="menu-item">Добавить пользователя</a>
-                <a href="{{ url_for('user_bp.user_list') }}" class="menu-item">Пользователи</a>
-            {% endif %}
-            <a href="{{ url_for('user_bp.logout') }}" class="menu-item logout">Выход</a>
-        </nav>
+        <div class="logo"><a href="/">KLASTERBOT</a></div>
+            <nav class="menu">
+                <a href="{{ url_for('agent_bp.agent_selection') }}"
+                   class="menu-item {% if request.path == url_for('agent_bp.agent_selection') %}active{% endif %}">
+                    Агенты
+                </a>
+                <a href="{{ url_for('session_bp.sessions') }}"
+                   class="menu-item {% if request.path == url_for('session_bp.sessions') %}active{% endif %}">
+                    Сессии
+                </a>
+                <a href="{{ url_for('agent_bp.agent_settings') }}"
+                   class="menu-item {% if request.path == url_for('agent_bp.agent_settings') %}active{% endif %}">
+                    Создать агента
+                </a>
+                <a href="{{ url_for('chat_bp.chat') }}"
+                   class="menu-item {% if request.path == url_for('chat_bp.chat') %}active{% endif %}">
+                    Тестовый чат
+                </a>
+                <a href="{{ url_for('user_bp.user_profile') }}"
+                   class="menu-item {% if request.path == url_for('user_bp.user_profile') and not request.args.get('user_id') %}active{% endif %}">
+                    Профиль
+                </a>
+                <a href="{{ url_for('chat_bp.all_chats') }}"
+                   class="menu-item {% if request.path == url_for('chat_bp.all_chats') and not request.args %}active{% endif %}">
+                    Все чаты
+                </a>
+                {% if session.get('role_id') == 1 %}
+                    <a href="{{ url_for('user_bp.add_user') }}"
+                       class="menu-item {% if request.path == url_for('user_bp.add_user') %}active{% endif %}">
+                        Добавить пользователя
+                    </a>
+                    <a href="{{ url_for('user_bp.user_list') }}"
+                       class="menu-item {% if request.path == url_for('user_bp.user_list') %}active{% endif %}">
+                        Пользователи
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('user_bp.logout') }}"
+                   class="menu-item logout">
+                    Выход
+                </a>
+            </nav>
     </div>
 
     <!-- Основное содержимое страницы -->
@@ -61,5 +88,7 @@ base.html
     <script src="{{ url_for('static', filename='js/agent_settings.js') }}"></script>
     <script src="{{ url_for('static', filename='js/change_password.js') }}"></script>
     <script src="{{ url_for('static', filename='js/assign_platform.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/all_chats.js') }}"></script>
+
 </body>
 </html>

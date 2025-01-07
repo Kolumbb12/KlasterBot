@@ -8,7 +8,7 @@
 /* Сетка для отображения карточек агентов */
 .agent-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, minmax(250px, 1fr));
     gap: 20px;
 }
 
@@ -20,25 +20,32 @@
     color: #FFFFFF;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 250px; /* Фиксированная высота карточки для выравнивания */
 }
 
 /* Заголовок в карточке агента */
 .agent-card h2 {
     font-size: 1.2em;
     margin: 10px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Параграф в карточке агента */
 .agent-card p {
     margin: 5px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Аватарка агента */
-.agent-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin-bottom: 10px;
+/* Блок действий (кнопок) */
+.agent-actions {
+    margin-top: auto; /* Прижать действия к низу карточки */
 }
 
 /* Кнопки действий внутри карточки агента */
@@ -50,20 +57,91 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    width: 100%;
+}
+
+/* Эффект наведения на кнопки */
+.agent-actions button:hover {
+    transform: scale(1.05);
 }
 
 /* Кнопка для активации агента */
 .agent-actions .active {
-    width: 100px;
     background-color: #FF4D4D;
 }
 
 /* Кнопка для деактивации агента */
 .agent-actions .inactive {
-    width: 100px;
     background-color: #4CAF50;
 }
 
+/* Специальная кнопка для назначения */
 .agent-actions .assign-platform-button {
-    width: 100px;
+    background-color: #9F7AEA;
 }
+
+/* Контейнер подсказки */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: default;
+}
+
+/* Основной текст */
+.tooltip p {
+    margin: 0;
+    white-space: nowrap; /* Добавляет троеточие при обрезании текста */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Скрытый текст подсказки */
+.tooltip-text {
+    visibility: hidden;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 5px;
+
+    /* Позиционирование подсказки */
+    position: absolute;
+    z-index: 10;
+    bottom: 120%; /* Расположение над текстом */
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+
+    /* Эффект появления */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+/* Треугольник под подсказкой */
+.tooltip-text::after {
+    content: '';
+    position: absolute;
+    top: 100%; /* Нижний край подсказки */
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+/* Показ подсказки при наведении */
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+    cursor: default;
+}
+
+/* Сетка адаптируется для меньших экранов */
+@media (max-width: 768px) {
+    .agent-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+

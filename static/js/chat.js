@@ -94,10 +94,10 @@ function sendMessage() {
     chatBox.appendChild(userMessage);
 
     // Анимация появления сообщения пользователя
-    userMessage.style.opacity = 0;
+    userMessage.style.opacity = '0';
     setTimeout(() => {
         userMessage.style.transition = "opacity 0.5s";
-        userMessage.style.opacity = 1;
+        userMessage.style.opacity = '1';
     }, 100);
 
     chatInput.value = "";
@@ -123,10 +123,10 @@ function sendMessage() {
             chatBox.appendChild(botMessage);
 
             // Анимация появления сообщения бота
-            botMessage.style.opacity = 0;
+            botMessage.style.opacity = '0';
             setTimeout(() => {
                 botMessage.style.transition = "opacity 0.5s";
-                botMessage.style.opacity = 1;
+                botMessage.style.opacity = '1';
             }, 100);
 
             chatBox.scrollTop = chatBox.scrollHeight;

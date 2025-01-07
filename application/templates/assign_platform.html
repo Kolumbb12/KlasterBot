@@ -9,20 +9,36 @@
 {% block content %}
 <div class="container">
     <h1>Назначить платформу для агента: {{ agent.name }}</h1>
-    <form method="POST" action="{{ url_for('session_bp.create_session', agent_id=agent.id) }}" onsubmit="return validateForm()">
+    <form method="POST" action="{{ url_for('session_bp.create_session', agent_id=agent.id) }}" enctype="multipart/form-data" onsubmit="return validateForm()">
         <label for="platform">Выберите платформу:</label>
-        <select name="platform" id="platform" onchange="toggleTokenField()">
+        <select name="platform" id="platform" onchange="toggleSetupMode()">
             <option value="" selected disabled>Выберите платформу...</option>
             {% for platform in platforms %}
                 <option value="{{ platform.id }}">{{ platform.name }}</option>
             {% endfor %}
         </select>
 
-        <!-- Поле для токена -->
-        <div id="token-field">
+        <div id="setup-options" style="display: none;">
+            <label for="setup_mode">Выберите режим установки:</label>
+            <select name="setup_mode" id="setup_mode" onchange="toggleFields()">
+                <option value="" selected disabled>Выберите режим установки...</option>
+                <option value="manual">Ручная установка</option>
+                <option value="auto">Автоматическая установка</option>
+            </select>
+        </div>
+
+        <!-- Поля для ручной установки -->
+        <div id="manual-setup" style="display: none;">
             <label for="api_token">Введите токен Telegram бота:</label>
             <input type="text" name="api_token" id="api_token" placeholder="Введите токен" />
-            <span id="error-message">Токен недействителен. Проверьте правильность ввода.</span>
+        </div>
+
+        <!-- Поля для автоматической установки -->
+        <div id="auto-setup" style="display: none;">
+            <label for="bot_name">Наименование бота:</label>
+            <input type="text" name="bot_name" placeholder="Введите наименование бота" />
+            <label for="bot_username">Username бота:</label>
+            <input type="text" name="bot_username" placeholder="Введите username бота" />
         </div>
 
         <button type="submit">Создать сессию</button>

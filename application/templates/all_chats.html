@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Все чаты{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/all_chats.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Все чаты</h1>
+
+   <select id="session-select" name="session">
+        <option value="" disabled {% if not selected_session_id %}selected{% endif %}>
+            -- Выберите сессию --
+        </option>
+        {% for session in sessions %}
+            <option value="{{ session.id }}" {% if session.id == selected_session_id %}selected{% endif %}>
+                {{ session.bot_name }} - {{ session.platform }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <select id="user-select" name="user" data-selected-user="{{ selected_user_id }}" {% if not selected_session_id %}disabled{% endif %}>
+        <option value="" disabled {% if not selected_user_id %}selected{% endif %}>
+            -- Выберите пользователя --
+        </option>
+        {% for user in users %}
+            <option value="{{ user.id }}" {% if user.id == selected_user_id %}selected{% endif %}>
+                {{ user.full_name or user.username }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <!-- История чата -->
+    <div id="chat-history">
+        {% if chat_history and chat_history|length > 0 %}
+            <div class="chat-box">
+                {% for message in chat_history %}
+                    {% if message.role == "user" %}
+                        <div class="message user-message">
+                            <div class="message-header">{{ message.user_name }}</div>
+                            {{ message.content }}
+                        </div>
+                    {% elif message.role == "assistant" %}
+                        <div class="message bot-message">
+                            <div class="message-header">{{ message.bot_name }}</div>
+                            {{ message.content }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>История чата отсутствует.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -72,11 +72,44 @@ def check_spam(user_id):
     return False
 
 
+import requests
+
+def is_valid_telegram_token(token: str) -> bool:
+    """
+    Проверяет валидность API-токена Telegram.
+
+    :param token: API-токен Telegram бота
+    :return: True, если токен валиден, иначе False
+    """
+    if not token or ":" not in token:  # Проверка базового формата токена
+        return False
+
+    url = f"https://api.telegram.org/bot{token}/getMe"
+    try:
+        response = requests.get(url, timeout=5)  # Запрос к Telegram API
+        response.raise_for_status()  # Генерирует исключение для HTTP ошибок
+        data = response.json()  # Расшифровка ответа JSON
+
+        # Проверка на корректный ответ от Telegram
+        if data.get("ok") and "result" in data:
+            return True
+        return False
+    except requests.HTTPError as e:
+        print(f"HTTP ошибка при проверке токена: {e}")
+        return False
+    except requests.RequestException as e:
+        print(f"Ошибка соединения при проверке токена: {e}")
+        return False
+    except ValueError as e:
+        print(f"Ошибка при разборе ответа JSON: {e}")
+        return False
+
+
 import re
 from PIL import Image
 import os
 
-async def is_username_valid(username: str) -> bool:
+def is_username_valid(username: str) -> bool:
     """
     Проверяет, что username соответствует правилам Telegram (может содержать буквы, цифры, подчёркивания и должен заканчиваться на 'bot').
     """
@@ -84,7 +117,7 @@ async def is_username_valid(username: str) -> bool:
     return bool(re.match(pattern, username))
 
 
-async def is_bot_name_valid(bot_name: str) -> bool:
+def is_bot_name_valid(bot_name: str) -> bool:
     """
     Проверяет, что имя бота является валидным.
     Имя может содержать буквы, цифры, пробелы и подчёркивания, но не другие спецсимволы.
@@ -107,10 +140,10 @@ async def check_bot_name_and_username(bot_name: str, bot_username: str) -> bool:
     """
     Проверяет, что и имя бота, и username валидны и доступны.
     """
-    if not await is_bot_name_valid(bot_name):
+    if not is_bot_name_valid(bot_name):
         logger.log(f"Имя бота '{bot_name}' не валидно.", 'ERROR')
         return False
-    if not await is_username_valid(bot_username):
+    if not is_username_valid(bot_username):
         logger.log(f"Username '{bot_username}' не валиден. Он должен заканчиваться на 'bot' и не содержать спецсимволов.", 'ERROR')
         return False
     if not await is_username_available(bot_username):
@@ -119,7 +152,7 @@ async def check_bot_name_and_username(bot_name: str, bot_username: str) -> bool:
     return True
 
 
-async def is_bot_about_valid(about_text: str) -> bool:
+def is_bot_about_valid(about_text: str) -> bool:
     """
     Проверяет, что текст о боте (About) является валидным.
     Текст может содержать буквы, цифры, пробелы и спецсимволы, но не должен превышать 70 символов.
@@ -129,7 +162,7 @@ async def is_bot_about_valid(about_text: str) -> bool:
     return bool(re.match(r'^[\w _.,!?()&"\'\-а-яА-ЯёЁa-zA-Z]+$', about_text))
 
 
-async def is_bot_description_valid(description: str) -> bool:
+def is_bot_description_valid(description: str) -> bool:
     """
     Проверяет, что текст description для бота Telegram является валидным.
     Текст может содержать буквы, цифры, пробелы и спецсимволы, но не должен превышать 512 символов.
@@ -163,7 +196,7 @@ def is_valid_bot_profile_photo(file_path: str) -> bool:
             if abs(width - height) / max(width, height) * 100 > 20:
                 return False
         return True
-    except Exception as e:
+    except Exception:
         return False
 
 
@@ -198,5 +231,30 @@ def is_valid_bot_description_photo(file_path: str) -> bool:
                 return True
             else:
                 return False
-    except Exception as e:
+    except Exception:
         return False
+
+
+import requests
+
+def get_telegram_bot_name_and_username_by_token(api_token: str):
+    """
+    Получает имя и username Telegram-бота по его токену.
+
+    :param api_token: Токен бота.
+    :return: Кортеж (first_name, username), если токен валиден.
+             None, если токен недействителен или произошла ошибка.
+    """
+    url = f"https://api.telegram.org/bot{api_token}/getMe"
+    try:
+        response = requests.get(url, timeout=5)  # Запрос к Telegram API
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("ok"):
+                bot_info = data.get("result", {})
+                first_name = bot_info.get("first_name")
+                username = bot_info.get("username")
+                return first_name, username
+        return None
+    except requests.RequestException:
+        return None

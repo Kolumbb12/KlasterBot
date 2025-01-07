@@ -41,7 +41,7 @@ def login():
         user = get_user_by_username(username)
         if user and user['password'] == password:
             session['user_id'] = user['id']
-            session['is_admin'] = bool(user['is_admin'])
+            session['role_id'] = user['role_id']
             flash('Вы успешно вошли на сайт', 'success')
             return redirect(url_for('agent_bp.agent_selection'))
         else:
@@ -152,18 +152,20 @@ def add_user():
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
 
-    if not session.get('is_admin'):
+    if session.get('role_id') != 1:
         flash("У вас нет прав доступа", "error")
         return redirect(url_for('agent_bp.agent_selection'))
 
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        is_admin = 'is_admin' in request.form
+        role_id = int('role_id' in request.form)
+        role_id = role_id + 2 if role_id == 0 else role_id
 
         if username and password:
             try:
-                insert_user(username=username, password=password, is_admin=int(is_admin))
+                new_id = get_last_user_id()
+                insert_user(id=new_id, username=username, password=password, role_id=role_id)
                 flash("Пользователь успешно добавлен", "success")
             except Exception as e:
                 if "Duplicate entry" in str(e):
@@ -187,7 +189,7 @@ def user_list():
 
     :return: Шаблон user_list.html с данными пользователей.
     """
-    if not session.get('is_admin'):
+    if session.get('role_id') != 1:
         flash("У вас нет прав доступа", "error")
         return redirect(url_for('agent_bp.agent_selection'))
 

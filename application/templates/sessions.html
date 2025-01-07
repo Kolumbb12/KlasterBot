@@ -17,6 +17,8 @@
                 <th>Платформа</th>
                 <th>Статус</th>
                 <th>Дата создания</th>
+                <th>Наименование бота</th>
+                <th>Username бота</th>
                 <th>Действия</th>
             </tr>
         </thead>
@@ -28,6 +30,8 @@
                 <td>{{ session.platform }}</td>
                 <td>{{ 'Активна' if session.is_active else 'Неактивна' }}</td>
                 <td>{{ session.created_at }}</td>
+                <td>{{ session.bot_name }}</td>
+                <td>{{ session.bot_username }}</td>
                 <td>
                     {% if session.is_active %}
                         <form method="POST" action="{{ url_for('session_bp.terminate_session', session_id=session.id) }}" style="display:inline;">
@@ -45,5 +49,51 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% if session.get('role_id') == 1 %}
+    <h2>Все сессии</h2>
+    <table class="sessions-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Пользователь</th>
+                <th>Агент</th>
+                <th>Платформа</th>
+                <th>Статус</th>
+                <th>Дата создания</th>
+                <th>Наименование бота</th>
+                <th>Username бота</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in all_sessions %}
+            <tr>
+                <td>{{ session.id }}</td>
+                <td>{{ session.user_name }}</td>
+                <td>{{ session.agent_name }}</td>
+                <td>{{ session.platform }}</td>
+                <td>{{ 'Активна' if session.is_active else 'Неактивна' }}</td>
+                <td>{{ session.created_at }}</td>
+                <td>{{ session.bot_name }}</td>
+                <td>{{ session.bot_username }}</td>
+                <td>
+                    {% if session.is_active %}
+                        <form method="POST" action="{{ url_for('session_bp.terminate_session', session_id=session.id) }}" style="display:inline;">
+                            <button type="submit" class="terminate-button red-button">Завершить</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('session_bp.activate_session', session_id=session.id) }}" style="display:inline;">
+                            <button type="submit" class="activate-button green-button">Включить</button>
+                        </form>
+                    {% endif %}
+                    <br>
+                    <a href="{{ url_for('session_bp.configure_session', session_id=session.id) }}" class="configure-button purple-button">Настроить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
 </div>
 {% endblock %}

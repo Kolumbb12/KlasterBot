@@ -76,7 +76,6 @@ def chat_history():
         return jsonify({"error": "ID агента не указан"}), 400
     try:
         user_id = session['user_id']
-        # Логика получения истории чата из базы данных
         my_chat_history = get_chat_history_by_user_and_agent(user_id, agent_id, 1)
         return jsonify({"chat_history": my_chat_history}), 200
     except Exception as e:
@@ -111,3 +110,62 @@ def clear_chat():
         return jsonify({"success": "Чат успешно очищен"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@chat_bp.route('/all_chats', methods=['GET'])
+def all_chats():
+    """
+    Маршрут для просмотра чатов администратором.
+    """
+    # Проверяем, что пользователь администратор
+    if 'user_id' not in session:
+        flash('Пожалуйста авторизуйтесь.', 'error')
+        return redirect(url_for('user_bp.login'))
+
+    # Получаем session_id и user_id из параметров запроса
+    session_id = request.args.get('session_id', type=int)
+    user_id = request.args.get('user_id', type=int)
+
+    try:
+        # Загружаем пользователей и историю чатов
+        users = []
+        user_chat_history = []
+        if session_id:
+            users = get_users_by_session_id(session_id)
+
+        if session_id and user_id:
+            user_chat_history = get_chat_history_by_session_id_and_user_id(session_id, user_id)
+
+        # Загружаем список сессий
+        if session['role_id'] == 1:
+            sessions = get_all_sessions()
+        else:
+            sessions = get_user_sessions(session['user_id'])
+
+        return render_template(
+            'all_chats.html',
+            users=users,
+            sessions=sessions,
+            chat_history=user_chat_history,
+            selected_user_id=user_id,
+            selected_session_id=session_id,
+        )
+    except Exception as e:
+        flash(f"Ошибка: {e}", "error")
+        return redirect(url_for('chat_bp.all_chats'))
+
+
+@chat_bp.route('/users_by_session', methods=['GET'])
+def users_by_session():
+    """
+    Возвращает пользователей с историей чата по session_id.
+    """
+    session_id = request.args.get('session_id', type=int)
+    if not session_id:
+        return jsonify({"error": "Не указан session_id"}), 400
+
+    try:
+        users = get_users_by_session_id(session_id)
+        return jsonify({"users": users}), 200
+    except Exception as e:
+        return jsonify({"error": f"Ошибка при загрузке пользователей: {e}"}), 500

@@ -25,6 +25,11 @@ from database.db_functions import *
 from utils.web_clients.gpt_api import generate_response
 from utils.logs.logger import logger
 from utils.utils import check_spam
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
 
 
 class BotRunner:
@@ -36,7 +41,7 @@ class BotRunner:
         self.bot = Bot(token=self.token, skip_updates=False)  # Инициализация бота
         self.dp = Dispatcher()  # Инициализация диспетчера
         self.dp["bot"] = self.bot  # Добавление бота в контекст диспетчера
-        self.webhook_url = f"https://7c0d-2a0d-b201-1019-31b4-6571-c2a1-d6f-c946.ngrok-free.app/webhook/{self.session_id}"
+        self.webhook_url = f"{os.getenv('NGROK_ADDRESS')}/webhook/{self.session_id}"
 
     async def start_webhook(self):
         """
@@ -49,8 +54,12 @@ class BotRunner:
             if check_spam(user_id):
                 await message.answer("Вы слишком часто отправляете сообщения. Пожалуйста, подождите.")
                 return
+            if not check_user_exists(user_id):
+                username = message.from_user.username or ''
+                first_name = message.from_user.first_name or ''
+                last_name = message.from_user.last_name or ''
+                insert_user(user_id, username, '', 3, f'{last_name} {first_name}')
             session = get_session_by_id(self.session_id)
-            user_input = message.text
             agent = select_agent_by_id(session['agent_id'])
             start_message = agent.get("start_message", "Добро пожаловать!")
             await message.answer(start_message)
@@ -62,13 +71,18 @@ class BotRunner:
             if check_spam(user_id):
                 await message.answer("Вы слишком часто отправляете сообщения. Пожалуйста, подождите.")
                 return
+            if not check_user_exists(user_id):
+                username = message.from_user.username or ''
+                first_name = message.from_user.first_name or ''
+                last_name = message.from_user.last_name or ''
+                insert_user(user_id, username, '', 3, f'{last_name} {first_name}')
             session = get_session_by_id(self.session_id)
             user_input = message.text
             agent = select_agent_by_id(session['agent_id'])
-            conversation_history = get_chat_history_by_session(self.session_id) or []
+            conversation_history = get_chat_history_by_session_id_and_user_id(self.session_id, user_id) or []
             response = generate_response(agent_id=agent['id'], user_input=user_input, conversation_history=conversation_history)
             await message.answer(response)
-            insert_chat_message_for_session(agent['user_id'], agent['id'], 2, self.session_id, user_input, response)
+            insert_chat_message_for_session(user_id, agent['id'], 2, self.session_id, user_input, response)
 
         # Настройка Webhook в Telegram
         await self.bot.set_webhook(self.webhook_url, drop_pending_updates=True)

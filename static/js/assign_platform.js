@@ -1,16 +1,16 @@
-function toggleTokenField() {
-    const platformSelect = document.getElementById('platform');
-    const tokenField = document.getElementById('token-field');
-
-    // Показываем поле токена только для Telegram (bot), ID = 2
-    if (platformSelect.value === "2") {
-        tokenField.style.display = "block";
-    } else {
-        tokenField.style.display = "none";
-        document.getElementById('api_token').value = ""; // Очистка поля токена
-        hideErrorMessage();
-    }
-}
+// function toggleTokenField() {
+//     const platformSelect = document.getElementById('platform');
+//     const tokenField = document.getElementById('token-field');
+//
+//     // Показываем поле токена только для Telegram (bot), ID = 2
+//     if (platformSelect.value === "2") {
+//         tokenField.style.display = "block";
+//     } else {
+//         tokenField.style.display = "none";
+//         document.getElementById('api_token').value = ""; // Очистка поля токена
+//         hideErrorMessage();
+//     }
+// }
 
 function validateForm() {
     const platformSelect = document.getElementById('platform');
@@ -36,4 +36,23 @@ function validateForm() {
 function hideErrorMessage() {
     const errorMessage = document.getElementById('error-message');
     errorMessage.style.display = "none";
+}
+
+function toggleSetupMode() {
+    const platformSelect = document.getElementById('platform');
+    const setupOptions = document.getElementById('setup-options');
+
+    if (platformSelect.value === "2") { // ID Telegram (bot)
+        setupOptions.style.display = "block";
+    } else {
+        setupOptions.style.display = "none";
+        document.getElementById('manual-setup').style.display = "none";
+        document.getElementById('auto-setup').style.display = "none";
+    }
+}
+
+function toggleFields() {
+    const setupMode = document.getElementById('setup_mode').value;
+    document.getElementById('manual-setup').style.display = setupMode === "manual" ? "block" : "none";
+    document.getElementById('auto-setup').style.display = setupMode === "auto" ? "block" : "none";
 }

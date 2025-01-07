@@ -44,7 +44,7 @@ agent_settings.html
         
         <!-- Поле для настройки температуры -->
         <div class="input-block">
-            <label for="temperature">Температура</label>
+            <label for="temperature">Температура (степень случайности ответов: выше = креативнее, ниже = точнее)</label>
             <input type="range" name="temperature" id="temperature" min="0" max="100" value="{{ agent.temperature * 100 if agent else 0 }}">
             <span id="temperature-value">{{ agent.temperature * 100 if agent else 0 }}%</span>
         </div>
@@ -66,7 +66,7 @@ agent_settings.html
             <input type="checkbox" name="accumulate_messages" id="message-buffer-checkbox" {% if agent and agent.accumulate_messages %}checked{% endif %}>
             <label for="message-buffer-checkbox">Накопление сообщений</label>
         </div>
-        
+
         <!-- Флажок для трансляции текущей даты -->
         <div class="input-block">
             <input type="checkbox" name="transmit_date" id="current-date" {% if agent and agent.transmit_date %}checked{% endif %}>
@@ -75,7 +75,7 @@ agent_settings.html
         
         <!-- Поле для API-ключа агента -->
         <div class="input-block">
-            <label for="api-key">Свой GPT API-key</label>
+            <label for="api-key">Свой GPT API-KEY</label>
             <input type="text" name="api_key" id="api-key" value="{{ agent.api_key if agent else '' }}" placeholder="Введите ваш API-key" required>
         </div>
         

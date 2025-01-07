@@ -17,10 +17,7 @@ def agent_selection():
     """
     Маршрут для отображения списка агентов текущего пользователя.
 
-    Обрабатывает GET запрос:
-    - GET: Отображает страницу со списком агентов, доступных текущему пользователю.
-
-    :return: Шаблон agent_selection.html со списком агентов.
+    Если пользователь администратор, отображаются также агенты всех других пользователей.
     """
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
@@ -28,7 +25,13 @@ def agent_selection():
 
     user_id = session['user_id']
     agents = select_all_agents_by_user_id(user_id)
-    return render_template('agent_selection.html', agents=agents)
+
+    # Если пользователь администратор, добавляем всех агентов, кроме его собственных
+    other_agents = []
+    if session.get('role_id') == 1:
+        other_agents = select_all_agents_except_user(user_id)
+
+    return render_template('agent_selection.html', agents=agents, other_agents=other_agents)
 
 
 @agent_bp.route('/agent_settings', methods=['GET', 'POST'])

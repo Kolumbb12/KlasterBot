@@ -19,6 +19,12 @@
     color: #9F7AEA;
     font-weight: bold;
     margin-bottom: 20px;
+    margin-left: 25px;
+}
+
+.logo a {
+    color: #9F7AEA;
+    text-decoration: none;
 }
 
 /* Меню в боковой панели */
@@ -38,7 +44,7 @@
 }
 
 /* Эффект наведения и активное состояние элемента меню */
-.menu-item:hover, .menu-item.active {
+.menu-item:hover {
     background-color: #9F7AEA;
 }
 
@@ -52,3 +58,11 @@
     background-color: #ff3333; /* Цвет фона при наведении на кнопку выхода */
     color: white;
 }
+
+.menu-item.active {
+    background-color: #9F7AEA; /* Цвет выделения */
+    font-weight: bold; /* Дополнительный акцент */
+    pointer-events: none; /* Отключить возможность повторного нажатия */
+    cursor: default; /* Изменить курсор */
+}
+

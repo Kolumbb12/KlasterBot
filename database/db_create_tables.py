@@ -18,20 +18,36 @@ try:
         # Создание курсора для выполнения SQL-запросов
         cursor = connection.cursor()
 
+        # Запрос для создания таблицы ролей
+        create_table_query = """
+        CREATE TABLE IF NOT EXISTS roles (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            permissions VARCHAR(255) NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            is_deleted BOOLEAN DEFAULT FALSE
+        );
+        """
+        # Выполнение запроса на создание таблицы users
+        cursor.execute(create_table_query)
+        print("Таблица 'roles' создана или уже существует.")
+
         # Запрос для создания таблицы пользователей
         create_table_query = """
         CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(50) NOT NULL,
-            password VARCHAR(255) NOT NULL,
+            id BIGINT PRIMARY KEY,
+            username VARCHAR(155) NULL,
+            password VARCHAR(255) NULL,
             full_name VARCHAR(100) NULL,
             email VARCHAR(100) NULL,
             phone_number VARCHAR(15) NULL,
-            is_admin INT NOT NULL DEFAULT 0,
+            role_id INT NOT NULL DEFAULT 2,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             is_deleted BOOLEAN DEFAULT FALSE,        
-            UNIQUE INDEX username_UNIQUE (username ASC)
+            UNIQUE INDEX username_UNIQUE (username ASC),
+            FOREIGN KEY (role_id) REFERENCES roles(id)
         );
         """
         # Выполнение запроса на создание таблицы users
@@ -42,7 +58,7 @@ try:
         create_agents_table_query = """
         CREATE TABLE IF NOT EXISTS gpt_agents (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT NOT NULL,
+            user_id BIGINT NOT NULL,
             name NVARCHAR(50) NOT NULL,
             instruction TEXT,
             start_message TEXT,
@@ -68,7 +84,10 @@ try:
         create_chat_types_table_query = """
         CREATE TABLE IF NOT EXISTS chat_types (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
+            name VARCHAR(255) NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            is_deleted BOOLEAN DEFAULT FALSE
         );
         """
         # Выполнение запроса на создание таблицы chat_types
@@ -79,14 +98,13 @@ try:
         create_chats_table_query = """
         CREATE TABLE IF NOT EXISTS chats (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT NOT NULL,
+            user_id BIGINT NOT NULL,
             agent_id INT NOT NULL,
             chat_type_id INT NOT NULL,
             session_id INT NULL,
             user_message TEXT,
             bot_response TEXT,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            response_at DATETIME DEFAULT NULL,
             is_deleted BOOLEAN DEFAULT FALSE,
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (agent_id) REFERENCES gpt_agents(id),
@@ -100,19 +118,41 @@ try:
 
         # Таблица для хранения сессий агентов
         create_sessions_table_query = """
-       CREATE TABLE IF NOT EXISTS sessions (
+        CREATE TABLE IF NOT EXISTS sessions (
             id INT AUTO_INCREMENT PRIMARY KEY,
             agent_id INT NOT NULL,
             chat_type_id INT NOT NULL,
-            user_id INT NOT NULL ,
+            user_id BIGINT NOT NULL ,
             is_active BOOLEAN DEFAULT FALSE,
-            api_token VARCHAR(255) NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             is_deleted BOOLEAN DEFAULT FALSE,
             FOREIGN KEY (agent_id) REFERENCES gpt_agents(id),
             FOREIGN KEY (chat_type_id) REFERENCES chat_types(id),
             FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+        """
+        # Выполнение запроса на создание таблицы sessions
+        cursor.execute(create_sessions_table_query)
+        print("Таблица 'sessions' создана или уже существует.")
+
+        # Таблица для хранения сессий агентов
+        create_sessions_table_query = """
+        CREATE TABLE IF NOT EXISTS telegram_bots (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            session_id INT NOT NULL,
+            api_token VARCHAR(255) NOT NULL,
+            bot_name VARCHAR(64) NOT NULL,
+            bot_username VARCHAR(32) NOT NULL UNIQUE,
+            bot_about VARCHAR(70) NULL DEFAULT NULL,
+            bot_description VARCHAR(255) NULL DEFAULT NULL,
+            bot_profile_picture VARCHAR(255) NULL DEFAULT NULL,
+            bot_description_picture VARCHAR(255) NULL DEFAULT NULL,
+            webhook_port SMALLINT UNSIGNED NOT NULL CHECK (webhook_port BETWEEN 1 AND 65535),
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            is_deleted BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (session_id) REFERENCES klasterbot_db.sessions(id)
         );
         """
         # Выполнение запроса на создание таблицы sessions

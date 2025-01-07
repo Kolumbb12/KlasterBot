@@ -16,6 +16,7 @@ body {
     padding: 20px;
 }
 
+
 /* Блок для флеш-сообщений (уведомлений) */
 .flash-messages {
     position: fixed;
