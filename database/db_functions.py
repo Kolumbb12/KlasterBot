@@ -8,7 +8,7 @@ db_functions.py
 from mysql.connector import Error
 from database.db_connection import db_instance
 from utils.logs.logger import logger
-
+from application.services.telegram.bot_configurator import update_bot_name, update_bot_description
 
 ######################################## Функции для работы с таблицей "users" #########################################
 
@@ -616,7 +616,7 @@ def get_session_by_id(session_id):
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute("""
                 SELECT s.id, s.agent_id, s.chat_type_id, s.is_active, tb.api_token, tb.webhook_port,
-                       s.created_at, s.updated_at, tb.bot_name, tb.bot_username, a.name AS agent_name, ct.name AS platform
+                       s.created_at, s.updated_at, tb.bot_name, tb.bot_username, tb.bot_description, a.name AS agent_name, ct.name AS platform
                 FROM sessions s
                 INNER JOIN gpt_agents a ON s.agent_id = a.id
                 INNER JOIN chat_types ct ON s.chat_type_id = ct.id
@@ -736,34 +736,46 @@ def get_last_webhook_port():
 def update_bot_name_db(session_id, new_bot_name):
     """
     Обновляет наименование телеграмм бота по его session_id.
-    :param session_id: ID сессии, наименование бота которого, нужно изменить.
-    :param new_bot_name: Новое наименование бота.
     """
     try:
+        token = get_session_by_id(session_id)['api_token']
+        api_response = update_bot_name(token, new_bot_name)
+        if 'Ошибка' in api_response:
+            logger.log(f"Ошибка при обновлении имени через API: {api_response}", "ERROR")
+            return False
         connection = db_instance.get_connection()
         with connection.cursor() as cursor:
             cursor.execute(
-                "UPDATE telegram_bots SET bot_name = %s WHERE telegram_bots.session_id = %s AND is_deleted = FALSE",
+                "UPDATE telegram_bots SET bot_name = %s WHERE session_id = %s AND is_deleted = FALSE",
                 (new_bot_name, session_id)
             )
             connection.commit()
-    except Error as e:
-        logger.log(f"Ошибка при обновлении наименования бота: {e}", "ERROR")
+            return True
+    except Exception as e:
+        logger.log(f"Ошибка при обновлении имени бота в БД: {e}", "ERROR")
+        return False
 
 
 def update_bot_description_db(session_id, new_bot_description):
     """
     Обновляет описание телеграмм бота по его session_id.
-    :param session_id: ID сессии, наименование бота которого, нужно изменить.
-    :param new_bot_description: Новое описание бота.
     """
     try:
+        token = get_session_by_id(session_id)['api_token']
+        api_response = update_bot_description(token, new_bot_description)
+        if 'Ошибка' in api_response:
+            logger.log(f"Ошибка при обновлении описания через API: {api_response}", "ERROR")
+            return False
         connection = db_instance.get_connection()
         with connection.cursor() as cursor:
             cursor.execute(
-                "UPDATE telegram_bots SET bot_description = %s WHERE telegram_bots.session_id = %s AND is_deleted = FALSE",
+                "UPDATE telegram_bots SET bot_description = %s WHERE session_id = %s AND is_deleted = FALSE",
                 (new_bot_description, session_id)
             )
             connection.commit()
-    except Error as e:
-        logger.log(f"Ошибка при обновлении описания бота: {e}", "ERROR")
+            return True
+    except Exception as e:
+        logger.log(f"Ошибка при обновлении описания бота в БД: {e}", "ERROR")
+        return False
+
+

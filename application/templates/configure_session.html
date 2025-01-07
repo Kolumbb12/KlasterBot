@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Настройка Бота{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/configure_session.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Настройка бота: {{ bot_config.bot_name }}<br>Сессии: {{ bot_config.id }}<br>Платформы: {{ bot_config.platform }}</h1>
+    <!-- Telegram (Бот) -->
+    {% if bot_config.chat_type_id == 2 %}
+        <form method="POST" action="{{ url_for('session_bp.configure_session', session_id=bot_config.id) }}">
+            <!-- Поле для имени бота -->
+            <div class="input-block">
+                <label for="bot_name">Имя бота:</label>
+                <input type="text" id="bot_name" name="bot_name" value="{{ bot_config.bot_name }}" required>
+            </div>
+            <!-- Поле для описания бота -->
+            <div class="input-block">
+                <label for="bot_description">Описание бота:</label>
+                <textarea id="bot_description" name="bot_description" required>{{ bot_config.bot_description }}</textarea>
+            </div>
+            <!-- Кнопка для сохранения изменений -->
+            <button type="submit">Сохранить изменения</button>
+        </form>
+        <!-- Кнопка для обращения к тех специалисту -->
+        <div class="support-button">
+            <a href="https://t.me/alex_codov" target="_blank" data-tooltip="Telegram API не позволяет менять все настройки автоматически. Свяжитесь с техническим специалистом для помощи в изменении username-а, about (о боте), фото профиля, фото описания бота.">
+                Обратиться к тех специалисту
+            </a>
+        </div>
+    <!-- Telegram (Пользователь) -->
+    {% elif bot_config.chat_type_id == 3 %}
+        <p>Функционал для изменения настроек Telegram (Пользователь) еще не реализован.</p>
+    <!-- WhatsApp (Бот) -->
+    {% elif bot_config.chat_type_id == 4 %}
+        <p>Функционал для изменения настроек WhatsApp (Бот) еще не реализован.</p>
+    <!-- WhatsApp (Пользователь) -->
+    {% elif bot_config.chat_type_id == 5 %}
+        <p>Функционал для изменения настроек WhatsApp (Пользователь) еще не реализован.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -170,7 +170,7 @@ def update_bot_profile_photo(token: str, photo_path: str) -> str:
 # -
 def update_bot_description_photo(token: str, photo_path: str) -> str:
     """
-    Обновляет аватарку бота.
+    Обновляет аватарку описания бота.
     """
     if not is_valid_bot_description_photo(photo_path):
         logger.log("Фото описания бота не валидно. Проверьте формат, размер и разрешение.", "ERROR")

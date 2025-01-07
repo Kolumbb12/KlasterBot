@@ -1,0 +1,132 @@
+.container {
+    background-color: #2C2C3D;
+    width: 650px;
+    border-radius: 12px;
+    color: #FFFFFF;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    font-family: 'Arial', sans-serif;
+    margin-top: 10px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.input-block {
+    margin-bottom: 20px;
+}
+
+.input-block label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.input-block input, .input-block textarea {
+    width: 96%;
+    padding: 12px;
+    margin-top: 5px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background-color: #1E1E2F;
+    color: #FFFFFF;
+    font-size: 14px;
+    transition: border 0.2s;
+}
+
+.input-block input:focus, .input-block textarea:focus {
+    border: 1px solid #9F7AEA;
+    outline: none;
+}
+
+textarea {
+    resize: none;
+    height: 100px;
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #9F7AEA;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #7B61FF;
+}
+
+button:active {
+    background-color: #6A4ECC;
+}
+
+.support-button {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.support-button {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.support-button a {
+    display: inline-block;
+    width: 96.5%;
+    padding: 12px;
+    background-color: #69d868;
+    color: #FFFFFF;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+    position: relative;
+}
+
+.support-button a:hover {
+    background-color: #36e323;
+    transform: scale(1.05);
+}
+
+.support-button a::after {
+    content: attr(data-tooltip); /* Используем data-tooltip вместо title */
+    display: none;
+    position: absolute;
+    top: 130%; /* Располагаем подсказку ниже кнопки */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1E1E2F;
+    color: #FFFFFF;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    white-space: normal;
+    word-wrap: break-word;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    max-width: 300px;
+    text-align: center;
+}
+
+.support-button a:hover::after {
+    display: block;
+}
+
+@media screen and (max-width: 768px) {
+    .support-button a::after {
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 90%; /* Уменьшаем ширину подсказки для мобильных экранов */
+    }
+}

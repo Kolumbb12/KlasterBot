@@ -189,20 +189,46 @@ def terminate_session(session_id):
     return redirect(url_for('session_bp.sessions'))
 
 
-@session_bp.route('/sessions/configure/<int:session_id>', methods=['GET'])
+@session_bp.route('/sessions/configure/<int:session_id>', methods=['GET', 'POST'])
 def configure_session(session_id):
     """
-    Настройка сессии.
+    Маршрут для настройки бота в сессии.
     """
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
     try:
         user_session = get_session_by_id(session_id)
-        if not user_session:
-            flash("Сессия не найдена.", "error")
+        # Настройка Telegram (ботов)
+        if user_session['chat_type_id'] == 2:
+            if request.method == 'GET':
+                if not user_session:
+                    flash("Конфигурация бота не найдена.", "error")
+                    return redirect(url_for('session_bp.sessions'))
+                return render_template('configure_session.html', bot_config=user_session)
+            if request.method == 'POST':
+                bot_name = request.form.get('bot_name')
+                bot_description = request.form.get('bot_description')
+                error_messages = []
+                if bot_name:
+                    if not update_bot_name_db(session_id, bot_name):
+                        error_messages.append("Ошибка при обновлении имени бота. Не валидное имя бота.")
+                if bot_description:
+                    if not update_bot_description_db(session_id, bot_description):
+                        error_messages.append("Ошибка при обновлении описания бота. Не валидное описание бота.")
+                if error_messages:
+                    flash(" ".join(error_messages), "error")
+                else:
+                    flash("Настройки успешно обновлены!", "success")
+                return redirect(url_for('session_bp.sessions'))
+        # Настройка остальных платформ
+        elif user_session['chat_type_id'] in [3, 4, 5]:
+            flash("Функционал ещё не реализован, вернитесь позже.", "error")
             return redirect(url_for('session_bp.sessions'))
-        return render_template('configure_session.html', user_session=user_session)
+
+        else:
+            flash('Настройка доступна только для Telegram ботов.', 'error')
     except Exception as e:
-        flash(f"Ошибка при настройке сессии: {e}", "error")
+        logger.log(f"Ошибка при настройке бота сессии {session_id}: {e}", "ERROR")
+        flash(f"Ошибка: {e}", "error")
         return redirect(url_for('session_bp.sessions'))

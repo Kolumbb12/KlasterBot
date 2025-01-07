@@ -33,7 +33,6 @@ def agent_selection():
 
     return render_template('agent_selection.html', agents=agents, other_agents=other_agents)
 
-
 @agent_bp.route('/agent_settings', methods=['GET', 'POST'])
 @agent_bp.route('/agent_settings/<int:agent_id>', methods=['GET', 'POST'])
 def agent_settings(agent_id=None):
@@ -113,6 +112,7 @@ def agent_settings(agent_id=None):
             flash("Агент создан", "success")
         return redirect(url_for('agent_bp.agent_selection'))
     return render_template('agent_settings.html', agent=agent, page_title=page_title)
+
 
 
 @agent_bp.route('/toggle_agent_status/<int:agent_id>')
