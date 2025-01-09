@@ -1,16 +1,4 @@
-// function toggleTokenField() {
-//     const platformSelect = document.getElementById('platform');
-//     const tokenField = document.getElementById('token-field');
-//
-//     // Показываем поле токена только для Telegram (bot), ID = 2
-//     if (platformSelect.value === "2") {
-//         tokenField.style.display = "block";
-//     } else {
-//         tokenField.style.display = "none";
-//         document.getElementById('api_token').value = ""; // Очистка поля токена
-//         hideErrorMessage();
-//     }
-// }
+
 
 function validateForm() {
     const platformSelect = document.getElementById('platform');

@@ -16,9 +16,9 @@ user_profile.html
 
 {% block content %}
 <h1>Профиль пользователя</h1>
-<form method="post" action="{{ url_for('user_bp.user_profile', user_id=user.id) }}">
+<form method="post" action="{{ url_for('user_bp.user_profile', user_id=user.user_id) }}">
     <!-- Скрытое поле для передачи ID пользователя -->
-    <input type="hidden" name="user_id" value="{{ user.id }}">
+    <input type="hidden" name="user_id" value="{{ user.user_id }}">
 
     <!-- Поле для отображения имени пользователя (только для чтения) -->
     <div class="form-group">
@@ -48,7 +48,7 @@ user_profile.html
     <div class="form-group">
         <label for="password">Пароль</label>
         <input type="password" id="password" name="password" value="{{ user.password }}" readonly>
-        <button type="button" onclick="window.location.href='{{ url_for('user_bp.change_password', user_id=user.id) }}'">Сменить пароль</button>
+        <button type="button" onclick="window.location.href='{{ url_for('user_bp.change_password', user_id=user.user_id) }}'">Сменить пароль</button>
     </div>
 
     <!-- Кнопка для сохранения изменений профиля -->

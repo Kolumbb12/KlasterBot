@@ -65,9 +65,6 @@ try:
             error_message TEXT,
             temperature DECIMAL(2, 1) DEFAULT 0.0 CHECK (temperature <= 1.0),
             max_tokens INT DEFAULT 150,
-            message_buffer INT DEFAULT 0,
-            accumulate_messages BOOLEAN DEFAULT FALSE,
-            transmit_date BOOLEAN DEFAULT FALSE,
             api_key NVARCHAR(255),
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -138,7 +135,7 @@ try:
 
         # Таблица для хранения сессий агентов
         create_sessions_table_query = """
-        CREATE TABLE IF NOT EXISTS telegram_bots (
+        CREATE TABLE IF NOT EXISTS bots (
             id INT AUTO_INCREMENT PRIMARY KEY,
             session_id INT NOT NULL,
             api_token VARCHAR(255) NOT NULL,

@@ -1,23 +1,36 @@
+<!--
+assign_platform.html
+Шаблон для назначения платформы агенту. Позволяет выбрать платформу, установить режим установки (ручной или автоматический) 
+и ввести необходимые данные для создания сессии.
+-->
+
 {% extends "base.html" %}
 
 {% block title %}Назначить платформу{% endblock %}
 
 {% block extra_styles %}
+    <!-- Подключение стилей для страницы назначения платформы -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/assign_platform.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="container">
+    <!-- Заголовок страницы с указанием имени агента -->
     <h1>Назначить платформу для агента: {{ agent.name }}</h1>
+    
+    <!-- Форма для выбора платформы и установки параметров -->
     <form method="POST" action="{{ url_for('session_bp.create_session', agent_id=agent.id) }}" enctype="multipart/form-data" onsubmit="return validateForm()">
+        <!-- Выбор платформы -->
         <label for="platform">Выберите платформу:</label>
         <select name="platform" id="platform" onchange="toggleSetupMode()">
             <option value="" selected disabled>Выберите платформу...</option>
             {% for platform in platforms %}
+                <!-- Динамическое отображение списка доступных платформ -->
                 <option value="{{ platform.id }}">{{ platform.name }}</option>
             {% endfor %}
         </select>
 
+        <!-- Секция для выбора режима установки (отображается при выборе платформы) -->
         <div id="setup-options" style="display: none;">
             <label for="setup_mode">Выберите режим установки:</label>
             <select name="setup_mode" id="setup_mode" onchange="toggleFields()">
@@ -41,6 +54,7 @@
             <input type="text" name="bot_username" placeholder="Введите username бота" />
         </div>
 
+        <!-- Кнопка отправки формы -->
         <button type="submit">Создать сессию</button>
     </form>
 </div>

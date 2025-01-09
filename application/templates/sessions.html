@@ -1,8 +1,15 @@
+<!--
+sessions.html
+Шаблон для отображения активных и всех сессий (для администратора).
+Позволяет просматривать, завершать, активировать и настраивать сессии.
+-->
+
 {% extends "base.html" %}
 
 {% block title %}Активные сессии{% endblock %}
 
 {% block extra_styles %}
+    <!-- Подключение CSS для оформления таблицы сессий -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sessions.css') }}">
 {% endblock %}
 
@@ -18,20 +25,35 @@
                 <th>Статус</th>
                 <th>Дата создания</th>
                 <th>Наименование бота</th>
-                <th>Username бота</th>
+                <th>Username / Телефон бота</th>
                 <th>Действия</th>
             </tr>
         </thead>
         <tbody>
+            <!-- Перебор активных сессий пользователя -->
             {% for session in user_sessions %}
             <tr>
                 <td>{{ session.id }}</td>
-                <td>{{ session.agent_name }}</td>
+                <td>
+                    <a href="{{ url_for('agent_bp.agent_settings', agent_id=session.agent_id) }}" class="td-link">
+                        {{ session.agent_name }}
+                    </a>
+                </td>
                 <td>{{ session.platform }}</td>
                 <td>{{ 'Активна' if session.is_active else 'Неактивна' }}</td>
                 <td>{{ session.created_at }}</td>
                 <td>{{ session.bot_name }}</td>
-                <td>{{ session.bot_username }}</td>
+                <td>
+                    {% if session.chat_type_id == 2 %}
+                        <a class="td-link" href="tg://resolve?domain={{ session.bot_username|replace('@', '') }}">
+                            {{ session.bot_username }}
+                        </a>
+                    {% else %}
+                        <a class="td-link" href="https://example.com/other-platform/{{ session.bot_username|replace('@', '') }}">
+                            {{ session.bot_username }}
+                        </a>
+                    {% endif %}
+                </td>
                 <td>
                     {% if session.is_active %}
                         <form method="POST" action="{{ url_for('session_bp.terminate_session', session_id=session.id) }}" style="display:inline;">
@@ -50,6 +72,7 @@
         </tbody>
     </table>
 
+    <!-- Если пользователь — администратор, отображаем все сессии -->
     {% if session.get('role_id') == 1 %}
     <h2>Все сессии</h2>
     <table class="sessions-table">
@@ -62,21 +85,36 @@
                 <th>Статус</th>
                 <th>Дата создания</th>
                 <th>Наименование бота</th>
-                <th>Username бота</th>
+                <th>Username / Телефон бота</th>
                 <th>Действия</th>
             </tr>
         </thead>
         <tbody>
+            <!-- Перебор всех сессий для администратора -->
             {% for session in all_sessions %}
             <tr>
                 <td>{{ session.id }}</td>
                 <td>{{ session.user_name }}</td>
-                <td>{{ session.agent_name }}</td>
+                <td>
+                    <a href="{{ url_for('agent_bp.agent_settings', agent_id=session.agent_id) }}" class="td-link">
+                        {{ session.agent_name }}
+                    </a>
+                </td>
                 <td>{{ session.platform }}</td>
                 <td>{{ 'Активна' if session.is_active else 'Неактивна' }}</td>
                 <td>{{ session.created_at }}</td>
                 <td>{{ session.bot_name }}</td>
-                <td>{{ session.bot_username }}</td>
+                <td>
+                    {% if session.chat_type_id == 2 %}
+                        <a class="td-link" href="tg://resolve?domain={{ session.bot_username|replace('@', '') }}">
+                            {{ session.bot_username }}
+                        </a>
+                    {% else %}
+                        <a class="td-link" href="https://example.com/other-platform/{{ session.bot_username|replace('@', '') }}">
+                            {{ session.bot_username }}
+                        </a>
+                    {% endif %}
+                </td>
                 <td>
                     {% if session.is_active %}
                         <form method="POST" action="{{ url_for('session_bp.terminate_session', session_id=session.id) }}" style="display:inline;">

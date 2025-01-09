@@ -2,11 +2,13 @@
 chat_routes.py
 Модуль маршрутов (роутов) для управления функционалом чата. Включает маршруты для взаимодействия с ботом,
 получения истории чата и очистки чата. Использует подключение к базе данных для хранения и извлечения сообщений.
+Также используется для отображения переписок пользователей и сессий (ботов).
 """
 
 from database.db_functions import *
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, jsonify
-from utils.web_clients.gpt_api import generate_response
+from utils.gpt_api import generate_response
+from utils.access_control import has_access, limiter, custom_limit_key
 
 
 # Создаем blueprint для маршрутов, связанных с чатом
@@ -14,6 +16,7 @@ chat_bp = Blueprint('chat_bp', __name__)
 
 
 @chat_bp.route('/chat', methods=['GET', 'POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def chat():
     """
     Маршрут для взаимодействия с ботом в чате.
@@ -32,7 +35,7 @@ def chat():
 
     if request.method == 'GET':
         agent_id = request.args.get('agent_id', type=int, default=1)  # Определение agent_id из параметров запроса
-        agents = select_all_agents_by_user_id(user_id)
+        agents = get_all_agents_by_user_id(user_id)
         my_chat_history = get_chat_history_by_user_and_agent(user_id=user_id, agent_id=agent_id,
                                                              chat_type_id=1) or []  # Убедитесь, что chat_history не None
         return render_template('chat.html', agents=agents, chat_history=my_chat_history, selected_agent_id=agent_id)
@@ -58,6 +61,7 @@ def chat():
 
 
 @chat_bp.route('/chat_history', methods=['GET'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def chat_history():
     """
     Маршрут для получения истории чата с определенным агентом.
@@ -84,6 +88,7 @@ def chat_history():
 
 
 @chat_bp.route('/clear_chat', methods=['POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def clear_chat():
     """
     Маршрут для очистки истории чата с определенным агентом.
@@ -113,6 +118,7 @@ def clear_chat():
 
 
 @chat_bp.route('/all_chats', methods=['GET'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def all_chats():
     """
     Маршрут для просмотра чатов администратором.
@@ -125,6 +131,16 @@ def all_chats():
     # Получаем session_id и user_id из параметров запроса
     session_id = request.args.get('session_id', type=int)
     user_id = request.args.get('user_id', type=int)
+
+    # Проверка доступа к сессии
+    if session_id and not has_access(session_id, 'session', session['user_id'], session.get('role_id')):
+        flash("У вас нет прав на доступ к этой сессии.", "error")
+        return redirect(url_for('chat_bp.all_chats'))
+
+    # Проверка доступа к чатам
+    if user_id and not has_access(user_id, 'user', session['user_id'], session.get('role_id')):
+        flash("У вас нет прав на просмотр чатов этого пользователя.", "error")
+        return redirect(url_for('chat_bp.all_chats'))
 
     try:
         # Загружаем пользователей и историю чатов
@@ -156,6 +172,7 @@ def all_chats():
 
 
 @chat_bp.route('/users_by_session', methods=['GET'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def users_by_session():
     """
     Возвращает пользователей с историей чата по session_id.

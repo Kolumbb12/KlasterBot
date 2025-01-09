@@ -1,3 +1,6 @@
+/* assign_platform.css */
+
+/* Основной контейнер для страницы назначения платформы */
 .container {
     max-width: 600px;
     margin: 0 auto;
@@ -9,6 +12,7 @@
     color: #fff; /* Белый текст */
 }
 
+/* Заголовок страницы */
 h1 {
     font-size: 24px;
     margin-bottom: 20px;
@@ -16,6 +20,7 @@ h1 {
     text-align: center;
 }
 
+/* Метки для полей ввода */
 label {
     font-weight: bold;
     margin-bottom: 5px;
@@ -23,6 +28,7 @@ label {
     color: #b3b3b3; /* Нежно-серый цвет для текста меток */
 }
 
+/* Поля ввода и выпадающие списки */
 select, input {
     width: 100%;
     padding: 12px;
@@ -34,24 +40,28 @@ select, input {
     font-size: 14px;
 }
 
+/* Поле ввода шириной 575px */
 input {
     width: 575px;
 }
 
+/* Стиль для текста placeholder */
 input::placeholder {
     color: #777;
 }
 
+/* Стили для фокуса на полях */
 input:focus, select:focus {
     border-color: #9F7AEA;
     outline: none;
-    box-shadow: 0 0 5px rgba(183, 68, 191, 0.5); /* Зеленая подсветка */
+    box-shadow: 0 0 5px rgba(183, 68, 191, 0.5); /* Фиолетовая подсветка */
 }
 
+/* Кнопка отправки формы */
 button {
     width: 100%;
     padding: 12px;
-    background-color: #9F7AEA; /* Зеленый цвет кнопки */
+    background-color: #9F7AEA; /* Фиолетовый цвет кнопки */
     color: #fff; /* Белый текст */
     font-size: 16px;
     font-weight: bold;
@@ -61,16 +71,19 @@ button {
     transition: background-color 0.3s ease-in-out, transform 0.2s;
 }
 
+/* Анимация при наведении на кнопку */
 button:hover {
-    background-color: #9943bf; /* Более темный зеленый при наведении */
+    background-color: #9943bf; /* Темно-фиолетовый при наведении */
     transform: scale(1.02); /* Легкое увеличение */
 }
 
+/* Поле для токена */
 #token-field {
     display: none; /* Скрыто по умолчанию */
     margin-top: 10px;
 }
 
+/* Сообщение об ошибке */
 #error-message {
     color: #ff6b6b; /* Яркий красный цвет для ошибок */
     font-size: 12px;
@@ -80,10 +93,12 @@ button:hover {
     text-align: left;
 }
 
+/* Блоки для ручной и автоматической настройки */
 #manual-setup, #auto-setup {
     margin-top: 20px;
 }
 
+/* Текстовые области */
 textarea {
     width: 575px;
     padding: 12px;
@@ -98,6 +113,7 @@ textarea {
     resize: none;
 }
 
+/* Адаптивный дизайн для экранов шириной менее 768px */
 @media (max-width: 768px) {
     .container {
         padding: 15px;

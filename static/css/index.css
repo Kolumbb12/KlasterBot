@@ -1,5 +1,6 @@
 /* index.css */
 
+/* Общие стили для body и html */
 body, html {
     margin: 0;
     padding: 0;
@@ -10,6 +11,7 @@ body, html {
     background: #6a0dad;
 }
 
+/* Контейнер для анимации */
 #animation-container {
     position: relative;
     width: 100%;
@@ -17,6 +19,7 @@ body, html {
     overflow: hidden;
 }
 
+/* Канвас для сетевой анимации */
 #network-canvas {
     position: absolute;
     top: 0;
@@ -26,6 +29,7 @@ body, html {
     z-index: 1;
 }
 
+/* Кнопка запуска с анимацией вращения */
 .start-button {
     position: absolute;
     top: 50%;
@@ -45,10 +49,12 @@ body, html {
     cursor: pointer;
 }
 
+/* Стиль кнопки при наведении */
 .start-button:hover {
     background-color: #222;
 }
 
+/* Анимация вращения кнопки */
 @keyframes rotate-button {
     0% {
         transform: translate(-50%, -50%) rotate(0deg);

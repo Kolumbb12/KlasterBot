@@ -22,8 +22,7 @@ from aiogram.types import Message
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiohttp import web
 from database.db_functions import *
-from utils.web_clients.gpt_api import generate_response
-from utils.logs.logger import logger
+from utils.gpt_api import generate_response
 from utils.utils import check_spam
 from dotenv import load_dotenv
 import os
@@ -60,7 +59,7 @@ class BotRunner:
                 last_name = message.from_user.last_name or ''
                 insert_user(user_id, username, '', 3, f'{last_name} {first_name}')
             session = get_session_by_id(self.session_id)
-            agent = select_agent_by_id(session['agent_id'])
+            agent = get_agent_by_id(session['agent_id'])
             start_message = agent.get("start_message", "Добро пожаловать!")
             await message.answer(start_message)
 
@@ -78,7 +77,7 @@ class BotRunner:
                 insert_user(user_id, username, '', 3, f'{last_name} {first_name}')
             session = get_session_by_id(self.session_id)
             user_input = message.text
-            agent = select_agent_by_id(session['agent_id'])
+            agent = get_agent_by_id(session['agent_id'])
             conversation_history = get_chat_history_by_session_id_and_user_id(self.session_id, user_id) or []
             response = generate_response(agent_id=agent['id'], user_input=user_input, conversation_history=conversation_history)
             await message.answer(response)

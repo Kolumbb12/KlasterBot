@@ -3,6 +3,58 @@ utils.py
 Модуль вспомогательных функций в приложении.
 """
 
+import re
+
+def validate_full_name(full_name):
+    """
+    Проверяет корректность полного имени.
+    :param full_name: Строка с полным именем.
+    :return: Сообщение об ошибке или None, если имя корректное.
+    """
+    if full_name and len(full_name) > 100:
+        return "Полное имя не может превышать 100 символов."
+    return None
+
+import re
+
+def validate_email(email):
+    """
+    Проверяет корректность email.
+    :param email: Строка с email.
+    :return: Сообщение об ошибке или None, если email корректный.
+    """
+    if email:
+        email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        if not re.match(email_regex, email):
+            return "Некорректный формат email."
+        if len(email) > 100:
+            return "Email не может превышать 100 символов."
+    return None
+
+def validate_phone_number(phone_number):
+    """
+    Проверяет корректность номера телефона.
+    :param phone_number: Строка с номером телефона.
+    :return: Сообщение об ошибке или None, если номер корректный.
+    """
+    if phone_number:
+        if not phone_number.isdigit():
+            return "Номер телефона может содержать только цифры."
+        if len(phone_number) > 15:
+            return "Номер телефона не может превышать 15 символов."
+    return None
+
+def validate_password(password):
+    """
+    Проверяет корректность пароля.
+    :param password: Строка с паролем.
+    :return: Сообщение об ошибке или None, если пароль корректный.
+    """
+    if password and len(password) < 8:
+        return "Пароль должен содержать не менее 8 символов."
+    return None
+
+
 from decimal import Decimal
 
 def convert_decimals(obj):

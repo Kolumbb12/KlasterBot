@@ -1,3 +1,11 @@
+<!--
+all_chats.html
+Этот файл представляет собой HTML-шаблон для отображения страницы с историей чатов в приложении. \
+Шаблон наследует структуру и базовые стили из файла base.html.
+Основная цель — предоставить пользователю интерфейс для просмотра чатов, фильтрации по сессиям и пользователям,
+а также отображения содержимого чатов в удобной форме.
+-->
+
 {% extends "base.html" %}
 
 {% block title %}Все чаты{% endblock %}
@@ -10,7 +18,8 @@
 <div class="container">
     <h1>Все чаты</h1>
 
-   <select id="session-select" name="session">
+    <!-- Выпадающий список для выбора сессии -->
+    <select id="session-select" name="session">
         <option value="" disabled {% if not selected_session_id %}selected{% endif %}>
             -- Выберите сессию --
         </option>
@@ -21,30 +30,31 @@
         {% endfor %}
     </select>
 
+    <!-- Выпадающий список для выбора пользователя -->
     <select id="user-select" name="user" data-selected-user="{{ selected_user_id }}" {% if not selected_session_id %}disabled{% endif %}>
         <option value="" disabled {% if not selected_user_id %}selected{% endif %}>
             -- Выберите пользователя --
         </option>
         {% for user in users %}
-            <option value="{{ user.id }}" {% if user.id == selected_user_id %}selected{% endif %}>
+            <option value="{{ user.user_id }}" {% if user.user_id == selected_user_id %}selected{% endif %}>
                 {{ user.full_name or user.username }}
             </option>
         {% endfor %}
     </select>
 
-    <!-- История чата -->
+    <!-- Блок истории чата -->
     <div id="chat-history">
         {% if chat_history and chat_history|length > 0 %}
             <div class="chat-box">
                 {% for message in chat_history %}
                     {% if message.role == "user" %}
                         <div class="message user-message">
-                            <div class="message-header">{{ message.user_name }}</div>
+                            <div class="message-header">{{ message.user_name }} <span class="message-date">{{ message.created_at }}</span></div>
                             {{ message.content }}
                         </div>
                     {% elif message.role == "assistant" %}
                         <div class="message bot-message">
-                            <div class="message-header">{{ message.bot_name }}</div>
+                            <div class="message-header">{{ message.bot_name }} <span class="message-date">{{ message.created_at }}</span></div>
                             {{ message.content }}
                         </div>
                     {% endif %}

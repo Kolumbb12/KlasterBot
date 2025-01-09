@@ -8,6 +8,8 @@ user_routes.py
 from database.db_functions import *
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session
 from database.db_connection import db_instance
+from utils.access_control import has_access, limiter, custom_limit_key
+from utils.utils import validate_full_name, validate_email, validate_phone_number, validate_password
 
 
 # Создаем blueprint для маршрутов, связанных с пользователями
@@ -69,6 +71,7 @@ def logout():
 
 
 @user_bp.route('/user_profile', methods=['GET', 'POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def user_profile():
     """
     Маршрут для отображения и редактирования профиля пользователя.
@@ -84,15 +87,47 @@ def user_profile():
         return redirect(url_for('user_bp.login'))
 
     user_id = request.args.get('user_id') or request.form.get('user_id') or session['user_id']
-    user = select_user_by_id(user_id)
+
+    if not has_access(user_id, 'user', session['user_id'], session.get('role_id')):
+        flash("У вас нет прав на доступ к этому профилю.", "error")
+        return redirect(url_for('session_bp.sessions'))
+
+    user = get_user_by_id(user_id)
 
     if request.method == 'POST':
+
         settings = {
             'full_name': request.form.get('full_name') or None,
             'email': request.form.get('email') or None,
             'phone_number': request.form.get('phone_number') or None,
-            'password': request.form.get('password') or None
+            'password': request.form.get('password') or No
         }
+
+        errors = []
+
+        # Проверка полей
+        full_name_error = validate_full_name(settings['full_name'])
+        if full_name_error:
+            errors.append(full_name_error)
+
+        email_error = validate_email(settings['email'])
+        if email_error:
+            errors.append(email_error)
+
+        phone_error = validate_phone_number(settings['phone_number'])
+        if phone_error:
+            errors.append(phone_error)
+
+        password_error = validate_password(settings['password'])
+        if password_error:
+            errors.append(password_error)
+
+        # Если есть ошибки, возвращаем их пользователю
+        if errors:
+            for error in errors:
+                flash(error, "error")
+            return redirect(url_for('user_bp.user_profile', user_id=user_id))
+
         try:
             update_user_profile(user_id, settings)
             flash("Профиль успешно обновлен", "success")
@@ -104,6 +139,7 @@ def user_profile():
 
 
 @user_bp.route('/change_password', methods=['GET', 'POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def change_password():
     """
     Маршрут для изменения пароля пользователя.
@@ -121,12 +157,21 @@ def change_password():
     # Определяем user_id: либо из аргументов запроса, либо из сессии (для себя)
     user_id = request.args.get('user_id') or session['user_id']
 
+    if not has_access(user_id, 'user', session['user_id'], session.get('role_id')):
+        flash("У вас нет прав на доступ к этому профилю.", "error")
+        return redirect(url_for('session_bp.sessions'))
+
     if request.method == 'POST':
         new_password = request.form.get('new_password')
 
         if not new_password:
             flash("Пароль не может быть пустым", "error")
             return redirect(url_for('user_bp.change_password', user_id=user_id))
+
+        password_error = validate_password(new_password)
+        if password_error:
+            flash(password_error, "error")
+            return redirect(url_for('user_bp.user_profile', user_id=user_id))
 
         # Обновляем пароль для указанного пользователя
         update_user_password(user_id, new_password)
@@ -138,6 +183,7 @@ def change_password():
 
 
 @user_bp.route('/add_user', methods=['GET', 'POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def add_user():
     """
     Маршрут для добавления нового пользователя (доступен только администраторам).
@@ -180,6 +226,7 @@ def add_user():
 
 
 @user_bp.route('/user_list')
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def user_list():
     """
     Маршрут для отображения списка пользователей (доступен только администраторам).

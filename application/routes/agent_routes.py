@@ -6,6 +6,8 @@ agent_routes.py
 
 from database.db_functions import *
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, jsonify
+from utils.gpt_api import validate_api_key
+from utils.access_control import has_access, limiter, custom_limit_key
 
 
 # Создаем blueprint для маршрутов, связанных с агентами
@@ -13,6 +15,7 @@ agent_bp = Blueprint('agent_bp', __name__)
 
 
 @agent_bp.route('/agent_selection')
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def agent_selection():
     """
     Маршрут для отображения списка агентов текущего пользователя.
@@ -22,19 +25,19 @@ def agent_selection():
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
-
     user_id = session['user_id']
-    agents = select_all_agents_by_user_id(user_id)
-
+    agents = get_all_agents_by_user_id(user_id)
     # Если пользователь администратор, добавляем всех агентов, кроме его собственных
     other_agents = []
     if session.get('role_id') == 1:
-        other_agents = select_all_agents_except_user(user_id)
+        other_agents = get_all_agents_except_user(user_id)
 
     return render_template('agent_selection.html', agents=agents, other_agents=other_agents)
 
+
 @agent_bp.route('/agent_settings', methods=['GET', 'POST'])
 @agent_bp.route('/agent_settings/<int:agent_id>', methods=['GET', 'POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def agent_settings(agent_id=None):
     """
     Маршрут для создания и редактирования настроек агента.
@@ -50,7 +53,12 @@ def agent_settings(agent_id=None):
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
 
-    agent = select_agent_by_id(agent_id) if agent_id else None
+    if agent_id is not None:
+        if not has_access(agent_id, 'agent', session['user_id'], session.get('role_id')):
+            flash("У вас нет прав на доступ к этому агенту.", "error")
+            return redirect(url_for('agent_bp.agent_selection'))
+
+    agent = get_agent_by_id(agent_id) if agent_id else None
     page_title = "Настройки агента" if agent else "Создание агента"
 
     if request.method == 'POST':
@@ -60,25 +68,21 @@ def agent_settings(agent_id=None):
         error_message = request.form.get('error_message')
         temperature = float(request.form.get('temperature')) / 100  # Конвертируем значение из диапазона 0-100 в 0-1
         max_tokens = request.form.get('max_tokens')
-        message_buffer = request.form.get('message_buffer')
-        accumulate_messages = 'accumulate_messages' in request.form
-        transmit_date = 'transmit_date' in request.form
         api_key = request.form.get('api_key')
-
         # Проверка на отсутствие обязательных полей
         if not all([name, instruction, start_message, error_message, api_key]):
             flash("Все поля должны быть заполнены корректно!", "error")
             return redirect(url_for('agent_bp.agent_settings', agent_id=agent_id))
-
         # Проверка на отрицательные значения
-        if int(max_tokens) < 0 or int(message_buffer) < 0:
-            flash("Максимальное количество токенов и буфер сообщений не могут быть отрицательными.", "error")
+        if int(max_tokens) < 0:
+            flash("Максимальное количество токенов не может быть отрицательными.", "error")
             return redirect(url_for('agent_bp.agent_settings', agent_id=agent_id))
-
+        # Проверка валидности API Key
+        if not validate_api_key(api_key):
+            flash("API Key недействителен. Проверьте корректность ключа.", "error")
+            return redirect(url_for('agent_bp.agent_settings', agent_id=agent_id))
         # Преобразование значений для базы данных
         max_tokens = int(max_tokens)
-        message_buffer = int(message_buffer)
-
         settings = {
             'name': name,
             'instruction': instruction,
@@ -86,12 +90,8 @@ def agent_settings(agent_id=None):
             'error_message': error_message,
             'temperature': temperature,
             'max_tokens': max_tokens,
-            'message_buffer': message_buffer,
-            'accumulate_messages': accumulate_messages,
-            'transmit_date': transmit_date,
             'api_key': api_key
         }
-
         if agent:
             update_agent_settings(agent_id, settings)
             flash("Настройки агента обновлены", "success")
@@ -104,9 +104,6 @@ def agent_settings(agent_id=None):
                 error_message=error_message,
                 temperature=temperature,
                 max_tokens=max_tokens,
-                message_buffer=message_buffer,
-                accumulate_messages=accumulate_messages,
-                transmit_date=transmit_date,
                 api_key=api_key
             )
             flash("Агент создан", "success")
@@ -114,8 +111,8 @@ def agent_settings(agent_id=None):
     return render_template('agent_settings.html', agent=agent, page_title=page_title)
 
 
-
 @agent_bp.route('/toggle_agent_status/<int:agent_id>')
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def toggle_agent_status(agent_id):
     """
     Маршрут для изменения статуса агента (включен/выключен).
@@ -129,10 +126,8 @@ def toggle_agent_status(agent_id):
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
-
     # Получаем текущий статус агента
-    agent = select_agent_by_id(agent_id)
-
+    agent = get_agent_by_id(agent_id)
     if agent:
         # Переключаем статус
         new_status = not agent['is_active']
@@ -145,6 +140,7 @@ def toggle_agent_status(agent_id):
 
 
 @agent_bp.route('/get_agent_data/<int:agent_id>', methods=['GET'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def get_agent_data(agent_id):
     """
     Маршрут для получения данных агента в формате JSON.
@@ -158,8 +154,7 @@ def get_agent_data(agent_id):
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
-
-    agent = select_agent_by_id(agent_id)
+    agent = get_agent_by_id(agent_id)
     if agent:
         data = {
             "name": agent['name'],

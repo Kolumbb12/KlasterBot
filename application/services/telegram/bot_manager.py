@@ -18,7 +18,7 @@ bot_manager.py
 
 import asyncio
 from application.services.telegram.runner import BotRunner
-from database.db_functions import get_last_webhook_port
+from database.db_functions import get_last_webhook_port, get_webhook_port
 from utils.logs.logger import logger
 
 
@@ -65,7 +65,7 @@ class BotManager:
         for session in sessions:
             session_id = session['id']
             token = session['api_token']
-            port = get_last_webhook_port()
+            port = get_webhook_port(session_id)
             tasks.append(self.start_bot(session_id, token, port))
         await asyncio.gather(*tasks)
 

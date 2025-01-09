@@ -44,7 +44,7 @@ h1, h2 {
 }
 
 /* Общие стили для кнопок */
-.sessions-table button, .sessions-table a {
+.sessions-table .activate-button, .sessions-table .terminate-button, .sessions-table .configure-button {
     color: #fff;
     padding: 10px 15px; /* Унифицированные отступы */
     border-radius: 5px;
@@ -92,3 +92,22 @@ h1, h2 {
     transform: scale(1.05);
 }
 
+/* Стили для ссылок */
+
+.td-link {
+    color: #00bcd4; /* Цвет ссылки */
+    text-decoration: none; /* Убираем подчеркивание */
+    font-weight: bold; /* Жирный шрифт */
+    transition: color 0.3s, text-shadow 0.3s; /* Плавный переход для эффекта */
+}
+
+.td-link:hover {
+    color: #1de9b6; /* Цвет при наведении */
+    text-shadow: 0 0 8px rgba(29, 233, 182, 0.8); /* Подсветка текста */
+    transform: scale(1.05); /* Легкое увеличение при наведении */
+}
+
+.td-link:active {
+    color: #00796b; /* Цвет при клике */
+    transform: scale(0.95); /* Легкое уменьшение при клике */
+}

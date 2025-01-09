@@ -4,7 +4,9 @@ session_routes.py
 - Отображения списка активных сессий.
 - Назначения платформы для агента.
 - Создания новой сессии.
+- Активации сессии.
 - Завершения активной сессии.
+- Конфигурации сессии.
 """
 
 import asyncio
@@ -18,6 +20,7 @@ from aiogram.types import Update
 from flask import current_app
 from application.services.telegram.bot_configurator import *
 from werkzeug.utils import secure_filename
+from utils.access_control import has_access, limiter, custom_limit_key
 
 
 # Создаём Blueprint для маршрутов, связанных с управлением сессиями
@@ -25,6 +28,7 @@ session_bp = Blueprint('session_bp', __name__)
 
 
 @session_bp.route('/sessions/assign/<int:agent_id>', methods=['GET'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def assign_platform(agent_id):
     """
     Отображение страницы для назначения платформы агенту.
@@ -32,8 +36,11 @@ def assign_platform(agent_id):
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
+    if not has_access(agent_id, 'agent', session['user_id'], session.get('role_id')):
+        flash("У вас нет прав на доступ к этому агенту.", "error")
+        return redirect(url_for('agent_bp.agent_selection'))
     try:
-        agent = select_agent_by_id(agent_id)
+        agent = get_agent_by_id(agent_id)
         platforms = get_available_platforms(agent_id)
         return render_template('assign_platform.html', agent=agent, platforms=platforms)
     except Exception as e:
@@ -42,6 +49,7 @@ def assign_platform(agent_id):
 
 
 @session_bp.route('/sessions/create/<int:agent_id>', methods=['POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def create_session(agent_id):
     """
     Создание новой сессии для агента.
@@ -104,6 +112,7 @@ def create_session(agent_id):
 
 
 @session_bp.route('/sessions', methods=['GET'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def sessions():
     """
     Отображение всех активных сессий текущего пользователя.
@@ -126,6 +135,7 @@ def sessions():
 
 
 @session_bp.route('/webhook/<int:session_id>', methods=['POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def webhook(session_id):
     """
     Обработка обновлений от Telegram.
@@ -148,6 +158,7 @@ def webhook(session_id):
 
 
 @session_bp.route('/sessions/activate/<int:session_id>', methods=['POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def activate_session(session_id):
     """
     Активация сессии (запуск бота).
@@ -172,6 +183,7 @@ def activate_session(session_id):
 
 
 @session_bp.route('/sessions/terminate/<int:session_id>', methods=['POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def terminate_session(session_id):
     """
     Деактивация сессии (остановка бота).
@@ -190,6 +202,7 @@ def terminate_session(session_id):
 
 
 @session_bp.route('/sessions/configure/<int:session_id>', methods=['GET', 'POST'])
+@limiter.limit("5 per minute", key_func=custom_limit_key)
 def configure_session(session_id):
     """
     Маршрут для настройки бота в сессии.
@@ -197,6 +210,9 @@ def configure_session(session_id):
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
+    if not has_access(session_id, 'session', session['user_id'], session.get('role_id')):
+        flash("У вас нет прав на доступ к этой сессии.", "error")
+        return redirect(url_for('session_bp.sessions'))
     try:
         user_session = get_session_by_id(session_id)
         # Настройка Telegram (ботов)

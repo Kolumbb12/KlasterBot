@@ -12,7 +12,7 @@ from application.services.telegram.bot_configurator import update_bot_name, upda
 
 ######################################## Функции для работы с таблицей "users" #########################################
 
-def select_user_by_id(user_id):
+def get_user_by_id(user_id):
     """
     Извлекает данные пользователя по его ID.
     :param user_id: ID пользователя, данные которого нужно получить.
@@ -22,7 +22,7 @@ def select_user_by_id(user_id):
     try:
         connection = db_instance.get_connection()
         with connection.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT * FROM users WHERE id = %s AND is_deleted = FALSE", (user_id,))
+            cursor.execute("SELECT id AS user_id, username, password, role_id, full_name, email, phone_number FROM users WHERE id = %s AND is_deleted = FALSE", (user_id,))
             user = cursor.fetchone()
             return user
     except Error as e:
@@ -187,7 +187,7 @@ def get_users_by_session_id(session_id):
 
 ###################################### Функции для работы с таблицей "gpt_agents" ######################################
 
-def select_agent_by_id(agent_id):
+def get_agent_by_id(agent_id):
     """
     Извлекает данные агента GPT по его ID.
     :param agent_id: ID агента GPT, данные которого нужно получить.
@@ -204,8 +204,7 @@ def select_agent_by_id(agent_id):
         logger.log(f"Ошибка при получении агента: {e}", "ERROR")
 
 
-def insert_agent(user_id, name, instruction, start_message, error_message, temperature=0.5, max_tokens=150,
-                 message_buffer=0, accumulate_messages=False, transmit_date=False, api_key=None):
+def insert_agent(user_id, name, instruction, start_message, error_message, temperature=0.5, max_tokens=150, api_key=None):
     """
     Добавляет нового агента GPT в базу данных.
     :param user_id: ID пользователя, которому принадлежит агент.
@@ -215,26 +214,22 @@ def insert_agent(user_id, name, instruction, start_message, error_message, tempe
     :param error_message: Сообщение об ошибке.
     :param temperature: Температура для генерации текста.
     :param max_tokens: Максимальное количество токенов для ответа.
-    :param message_buffer: Буфер сообщений.
-    :param accumulate_messages: Флаг накопления сообщений.
-    :param transmit_date: Флаг передачи даты.
     :param api_key: API ключ для агента.
     """
     try:
         connection = db_instance.get_connection()
         with connection.cursor() as cursor:
             cursor.execute(
-                """INSERT INTO gpt_agents (user_id, name, instruction, start_message, error_message, temperature, max_tokens, message_buffer, accumulate_messages, transmit_date, api_key) 
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                (user_id, name, instruction, start_message, error_message, temperature, max_tokens, message_buffer,
-                 accumulate_messages, transmit_date, api_key)
+                """INSERT INTO gpt_agents (user_id, name, instruction, start_message, error_message, temperature, max_tokens, api_key) 
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                (user_id, name, instruction, start_message, error_message, temperature, max_tokens, api_key)
             )
             connection.commit()
     except Error as e:
         logger.log(f"Ошибка при добавлении агента: {e}", "ERROR")
 
 
-def select_all_agents_by_user_id(user_id):
+def get_all_agents_by_user_id(user_id):
     """
     Извлекает всех агентов, связанных с конкретным пользователем, из базы данных.
     :param user_id: ID пользователя, для которого нужно получить агентов.
@@ -250,7 +245,7 @@ def select_all_agents_by_user_id(user_id):
         logger.log(f"Ошибка при получении агентов пользователя: {e}", "ERROR")
 
 
-def select_all_agents_except_user(user_id):
+def get_all_agents_except_user(user_id):
     """
     Извлекает всех агентов, кроме агентов указанного пользователя, из базы данных.
     :param user_id: ID пользователя, чьи агенты нужно исключить.
@@ -295,7 +290,6 @@ def update_agent_settings(agent_id, settings):
                 values.append(agent_id)
                 cursor.execute(update_query, values)
                 connection.commit()
-                logger.log("Настройки агента обновлены.", "ERROR")
             else:
                 logger.log("Нет допустимых полей для обновления.", "ERROR")
     except Error as e:
@@ -365,12 +359,13 @@ def get_chat_history_by_session_id_and_user_id(session_id, user_id):
                 c.id AS chat_id, 
                 c.user_message, 
                 c.bot_response, 
+                c.created_at,
                 u.full_name AS user_name, 
-                tb.bot_name
+                b.bot_name
             FROM chats c
             INNER JOIN users u ON c.user_id = u.id
             INNER JOIN sessions s ON c.session_id = s.id
-            INNER JOIN telegram_bots tb ON c.session_id = tb.session_id
+            INNER JOIN bots b ON c.session_id = b.session_id
             WHERE c.session_id = %s 
               AND c.user_id = %s 
               AND c.is_deleted = FALSE
@@ -383,10 +378,10 @@ def get_chat_history_by_session_id_and_user_id(session_id, user_id):
             for record in history:
                 if record['user_message']:
                     conversation_history.append({"role": "user", "content": record['user_message'],
-                                                 "user_name": record['user_name'], "bot_name": record['bot_name']})
+                                                 "user_name": record['user_name'], "bot_name": record['bot_name'], "created_at": record['created_at']})
                 if record['bot_response']:
                     conversation_history.append({"role": "assistant", "content": record['bot_response'],
-                                                 "user_name": record['user_name'], "bot_name": record['bot_name']})
+                                                 "user_name": record['user_name'], "bot_name": record['bot_name'], "created_at": record['created_at']})
             return conversation_history
     except Error as e:
         logger.log(f"Ошибка при чтении истории чата: {e}", "ERROR")
@@ -517,10 +512,10 @@ def get_all_sessions():
         with connection.cursor(dictionary=True) as cursor:
             query = """
                 SELECT 
-                    s.id, tb.bot_name, s.created_at, s.updated_at, s.is_active, ct.name AS platform 
+                    s.id, b.bot_name, s.created_at, s.updated_at, s.is_active, ct.name AS platform 
                 FROM sessions s
                 INNER JOIN chat_types ct ON s.chat_type_id = ct.id
-                INNER JOIN telegram_bots tb ON s.id = tb.session_id
+                INNER JOIN bots b ON s.id = b.session_id
                 WHERE s.is_deleted = FALSE
                 ORDER BY s.created_at ASC
             """
@@ -542,12 +537,12 @@ def get_user_sessions(user_id):
         connection = db_instance.get_connection()
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute("""
-                SELECT s.id, s.agent_id, s.chat_type_id, s.is_active, s.created_at, s.updated_at, tb.bot_name, tb.bot_username,
-                       a.name AS agent_name, ct.name AS platform
+                SELECT s.id, s.agent_id, s.chat_type_id, s.is_active, s.created_at, s.updated_at,
+                 b.bot_name, b.bot_username, a.name AS agent_name, ct.name AS platform
                 FROM sessions s
                 INNER JOIN gpt_agents a ON s.agent_id = a.id
                 INNER JOIN chat_types ct ON s.chat_type_id = ct.id
-                INNER JOIN telegram_bots tb ON s.id = tb.session_id
+                INNER JOIN bots b ON s.id = b.session_id
                 WHERE s.user_id = %s AND s.is_deleted = FALSE
             """, (user_id,))
             sessions = cursor.fetchall()
@@ -567,14 +562,14 @@ def get_all_sessions_except_admin(excluded_user_id):
         connection = db_instance.get_connection()
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute("""
-                SELECT s.id, s.agent_id, s.chat_type_id, s.is_active, s.created_at, s.updated_at, tb.bot_name, tb.bot_username,
-                       a.name AS agent_name, ct.name AS platform, 
+                SELECT s.id, s.agent_id, s.chat_type_id, s.is_active, s.created_at, s.updated_at, b.bot_name, b.bot_username,
+                       a.name AS agent_name, ct.name AS platform, s.user_id,
                        CASE WHEN u.full_name IS NOT NULL THEN u.full_name ELSE u.username END AS user_name
                 FROM sessions s
                 INNER JOIN gpt_agents a ON s.agent_id = a.id
                 INNER JOIN chat_types ct ON s.chat_type_id = ct.id
                 INNER JOIN users u ON s.user_id = u.id
-                INNER JOIN telegram_bots tb ON s.id = tb.session_id
+                INNER JOIN bots b ON s.id = b.session_id
                 WHERE s.user_id != %s AND s.is_deleted = FALSE
             """, (excluded_user_id,))
             sessions = cursor.fetchall()
@@ -593,9 +588,9 @@ def get_all_active_sessions():
         connection = db_instance.get_connection()
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute("""
-                SELECT s.id, s.agent_id, s.chat_type_id, tb.api_token, s.is_active, s.created_at, s.updated_at
+                SELECT s.id, s.agent_id, s.chat_type_id, b.api_token, s.is_active, s.created_at, s.updated_at
                 FROM sessions s
-                INNER JOIN telegram_bots tb ON s.id = tb.session_id
+                INNER JOIN bots b ON s.id = b.session_id
                 WHERE s.is_active = TRUE AND s.is_deleted = FALSE
             """)
             sessions = cursor.fetchall()
@@ -615,12 +610,12 @@ def get_session_by_id(session_id):
         connection = db_instance.get_connection()
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute("""
-                SELECT s.id, s.agent_id, s.chat_type_id, s.is_active, tb.api_token, tb.webhook_port,
-                       s.created_at, s.updated_at, tb.bot_name, tb.bot_username, tb.bot_description, a.name AS agent_name, ct.name AS platform
+                SELECT s.id, s.agent_id, s.chat_type_id, s.user_id, s.is_active, b.api_token, b.webhook_port,
+                       s.created_at, s.updated_at, b.bot_name, b.bot_username, b.bot_description, a.name AS agent_name, ct.name AS platform
                 FROM sessions s
                 INNER JOIN gpt_agents a ON s.agent_id = a.id
                 INNER JOIN chat_types ct ON s.chat_type_id = ct.id
-                INNER JOIN telegram_bots tb ON s.id = tb.session_id
+                INNER JOIN bots b ON s.id = b.session_id
                 WHERE s.id = %s AND s.is_deleted = FALSE
             """, (session_id,))
             session = cursor.fetchone()
@@ -672,7 +667,7 @@ def terminate_session_in_db(session_id):
         return False
 
 
-####################################### Функции для работы с таблицей "telegram_bots" #######################################
+####################################### Функции для работы с таблицей "bots" #######################################
 
 def add_telegram_bot(session_id, api_token, bot_name, bot_username, webhook_port):
     """
@@ -688,7 +683,7 @@ def add_telegram_bot(session_id, api_token, bot_name, bot_username, webhook_port
         connection = db_instance.get_connection()
         with connection.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO telegram_bots (session_id, api_token, bot_name, bot_username, webhook_port, created_at, updated_at)
+                INSERT INTO bots (session_id, api_token, bot_name, bot_username, webhook_port, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """, (session_id, api_token, bot_name, bot_username, webhook_port))
             connection.commit()
@@ -707,13 +702,31 @@ def is_telegram_token_api_exists(api_token):
     try:
         connection = db_instance.get_connection()
         with connection.cursor() as cursor:
-            query = "SELECT COUNT(*) FROM telegram_bots WHERE api_token = %s"
+            query = "SELECT COUNT(*) FROM bots WHERE api_token = %s"
             cursor.execute(query, (api_token,))
             result = cursor.fetchone()
             return result[0] > 0
     except Error as e:
         logger.log(f"Ошибка при проверке токена: {e}", "ERROR")
         return False
+
+
+def get_webhook_port(session_id):
+    """
+    Возвращает порт вебхука в указанной сессии.
+
+    :return: Порт вебхука в указанной сессии.
+    """
+    try:
+        connection = db_instance.get_connection()
+        with connection.cursor() as cursor:
+            query = "SELECT webhook_port FROM bots WHERE session_id = %s"
+            cursor.execute(query, (session_id,))
+            result = cursor.fetchone()
+            return result[0]
+    except Error as e:
+        logger.log(f"Ошибка при получении последнего порта вебхука: {e}", "ERROR")
+        return None
 
 
 def get_last_webhook_port():
@@ -725,7 +738,7 @@ def get_last_webhook_port():
     try:
         connection = db_instance.get_connection()
         with connection.cursor() as cursor:
-            cursor.execute("SELECT MAX(webhook_port) + 1 FROM telegram_bots WHERE webhook_port BETWEEN 1 AND 65535")
+            cursor.execute("SELECT MAX(webhook_port) + 1 FROM bots WHERE webhook_port BETWEEN 1 AND 65535")
             result = cursor.fetchone()
             return result[0]
     except Error as e:
@@ -746,7 +759,7 @@ def update_bot_name_db(session_id, new_bot_name):
         connection = db_instance.get_connection()
         with connection.cursor() as cursor:
             cursor.execute(
-                "UPDATE telegram_bots SET bot_name = %s WHERE session_id = %s AND is_deleted = FALSE",
+                "UPDATE bots SET bot_name = %s WHERE session_id = %s AND is_deleted = FALSE",
                 (new_bot_name, session_id)
             )
             connection.commit()
@@ -769,7 +782,7 @@ def update_bot_description_db(session_id, new_bot_description):
         connection = db_instance.get_connection()
         with connection.cursor() as cursor:
             cursor.execute(
-                "UPDATE telegram_bots SET bot_description = %s WHERE session_id = %s AND is_deleted = FALSE",
+                "UPDATE bots SET bot_description = %s WHERE session_id = %s AND is_deleted = FALSE",
                 (new_bot_description, session_id)
             )
             connection.commit()

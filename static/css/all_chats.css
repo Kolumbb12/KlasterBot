@@ -1,73 +1,105 @@
+/* all_chats.css */
+
+/* Основной контейнер для страницы всех чатов */
 .container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
+    background-color: #2C2C3D;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    color: #FFFFFF;
 }
 
+/* Заголовок страницы */
 h1 {
     text-align: center;
     margin-bottom: 20px;
+    font-size: 28px;
     color: #ffffff;
 }
 
+/* Блок для ввода данных */
 .input-block {
     margin-bottom: 15px;
 }
 
+/* Метки для полей ввода */
 label {
     font-size: 16px;
     color: #ffffff;
     display: block;
     margin-bottom: 5px;
+    font-weight: bold;
 }
 
+/* Выпадающие списки */
 select {
     width: 100%;
     padding: 10px;
     border: 1px solid #9F7AEA;
     border-radius: 5px;
-    background-color: #2C2C3D;
+    background-color: #1E1E2F;
     color: #FFFFFF;
     font-size: 16px;
     margin-bottom: 20px;
 }
 
+/* Фокус на выпадающих списках */
 select:focus {
     outline: none;
     border-color: #4CAF50;
 }
 
+/* Контейнер для истории чатов */
 .chat-box {
-    background-color: #2C2C3D;
+    background-color: #1E1E2F;
     padding: 20px;
     border-radius: 10px;
     color: #FFFFFF;
     max-height: 400px;
     overflow-y: auto;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Общие стили для сообщений */
 .message {
     display: flex;
     flex-direction: column;
     margin-bottom: 10px;
     padding: 10px;
     border-radius: 5px;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
+/* Сообщения от пользователя */
 .user-message {
     align-self: flex-end;
-    color: #FFFFFF;
     background-color: #4A4A5A;
+    color: #FFFFFF;
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.2);
 }
 
+/* Сообщения от бота */
 .bot-message {
     align-self: flex-start;
-    color: #333333;
     background-color: #E8E8E8;
+    color: #333333;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
+/* Заголовок сообщения */
 .message-header {
     font-size: 12px;
     margin-bottom: 5px;
     font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Дата сообщения */
+.message-date {
+    font-size: 10px;
+    color: #9E9E9E; /* Светло-серый цвет для даты */
 }

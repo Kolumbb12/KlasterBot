@@ -1,3 +1,7 @@
+/* configure_session.css */
+/* Стили для страницы настройки сессии, включая контейнер, блоки ввода, кнопки и подсказки */
+
+/* Основной контейнер для страницы */
 .container {
     background-color: #2C2C3D;
     width: 650px;
@@ -8,6 +12,7 @@
     margin-top: 10px;
 }
 
+/* Заголовок на странице */
 h1 {
     text-align: center;
     margin-bottom: 20px;
@@ -15,10 +20,12 @@ h1 {
     font-weight: bold;
 }
 
+/* Блоки ввода данных */
 .input-block {
     margin-bottom: 20px;
 }
 
+/* Метка для полей ввода */
 .input-block label {
     display: block;
     margin-bottom: 8px;
@@ -26,6 +33,7 @@ h1 {
     font-size: 16px;
 }
 
+/* Поля ввода текста и текстовые области */
 .input-block input, .input-block textarea {
     width: 96%;
     padding: 12px;
@@ -38,16 +46,19 @@ h1 {
     transition: border 0.2s;
 }
 
+/* Стили при фокусе на поле */
 .input-block input:focus, .input-block textarea:focus {
     border: 1px solid #9F7AEA;
     outline: none;
 }
 
+/* Текстовая область */
 textarea {
     resize: none;
     height: 100px;
 }
 
+/* Основная кнопка */
 button {
     display: block;
     width: 100%;
@@ -62,24 +73,23 @@ button {
     transition: background-color 0.3s;
 }
 
+/* Ховер-эффект для кнопки */
 button:hover {
     background-color: #7B61FF;
 }
 
+/* Эффект при нажатии на кнопку */
 button:active {
     background-color: #6A4ECC;
 }
 
+/* Блок для кнопки обращения к техническому специалисту */
 .support-button {
     margin-top: 20px;
     text-align: center;
 }
 
-.support-button {
-    margin-top: 20px;
-    text-align: center;
-}
-
+/* Стили для кнопки обращения */
 .support-button a {
     display: inline-block;
     width: 96.5%;
@@ -94,16 +104,18 @@ button:active {
     position: relative;
 }
 
+/* Ховер-эффект для кнопки обращения */
 .support-button a:hover {
     background-color: #36e323;
     transform: scale(1.05);
 }
 
+/* Подсказка для кнопки */
 .support-button a::after {
-    content: attr(data-tooltip); /* Используем data-tooltip вместо title */
+    content: attr(data-tooltip);
     display: none;
     position: absolute;
-    top: 130%; /* Располагаем подсказку ниже кнопки */
+    top: 130%;
     left: 50%;
     transform: translateX(-50%);
     background-color: #1E1E2F;
@@ -119,14 +131,16 @@ button:active {
     text-align: center;
 }
 
+/* Показ подсказки при наведении */
 .support-button a:hover::after {
     display: block;
 }
 
+/* Адаптивный дизайн для мобильных устройств */
 @media screen and (max-width: 768px) {
     .support-button a::after {
         left: 50%;
         transform: translateX(-50%);
-        max-width: 90%; /* Уменьшаем ширину подсказки для мобильных экранов */
+        max-width: 90%;
     }
 }
