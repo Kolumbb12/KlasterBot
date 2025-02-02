@@ -1,12 +1,12 @@
 """
 bot_manager.py
-Модуль для управления жизненным циклом ботов в системе. Этот файл содержит класс `BotManager`, который отвечает за
+Модуль для управления жизненным циклом ботов в системе. Этот файл содержит класс `TelegramBotManager`, который отвечает за
 запуск, остановку и управление ботами на основе сессий. Он предоставляет методы для асинхронного старта и остановки
 ботов, а также обработки нескольких ботов одновременно.
 
 Основные функции:
 - `start_bot(session_id, token, port)`: Запускает бота для указанной сессии, если он ещё не запущен.
-Использует класс `BotRunner` для выполнения старта бота и его webhook.
+Использует класс `TelegramBotRunner` для выполнения старта бота и его webhook.
 - `stop_bot(session_id)`: Останавливает бота для указанной сессии, завершив его webhook.
 - `start_all_bots(sessions)`: Запускает все боты для списка сессий асинхронно.
 - `stop_all_bots()`: Останавливает все боты.
@@ -17,12 +17,12 @@ bot_manager.py
 """
 
 import asyncio
-from application.services.telegram.runner import BotRunner
+from application.services.telegram.runner import TelegramBotRunner
 from database.db_functions import get_last_webhook_port, get_webhook_port
 from utils.logs.logger import logger
 
 
-class BotManager:
+class TelegramBotManager:
 
     def __init__(self):
         self.bots = {}
@@ -35,7 +35,7 @@ class BotManager:
             print(f"Бот {session_id} уже запущен.")
             return
 
-        bot_runner = BotRunner(session_id, token, port)
+        bot_runner = TelegramBotRunner(session_id, token, port)
         self.bots[session_id] = bot_runner
         try:
             await bot_runner.start_webhook()
@@ -83,4 +83,4 @@ class BotManager:
         return self.bots.get(session_id)
 
 
-bot_manager = BotManager()
+telegram_bot_manager = TelegramBotManager()

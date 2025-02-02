@@ -133,12 +133,12 @@ try:
         cursor.execute(create_sessions_table_query)
         print("Таблица 'sessions' создана или уже существует.")
 
-        # Таблица для хранения сессий агентов
+        # Таблица для хранения ботов
         create_sessions_table_query = """
         CREATE TABLE IF NOT EXISTS bots (
             id INT AUTO_INCREMENT PRIMARY KEY,
             session_id INT NOT NULL,
-            api_token VARCHAR(255) NOT NULL,
+            api_token VARCHAR(255) NULL,
             bot_name VARCHAR(64) NOT NULL,
             bot_username VARCHAR(32) NOT NULL UNIQUE,
             bot_about VARCHAR(70) NULL DEFAULT NULL,

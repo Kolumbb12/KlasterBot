@@ -13,7 +13,8 @@ import asyncio
 from asyncio import run_coroutine_threadsafe
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, jsonify
 from database.db_functions import *
-from application.services.telegram.bot_manager import bot_manager
+from application.services.telegram.bot_manager import telegram_bot_manager
+from application.services.whatsapp.bot_manager import whatsapp_bot_manager
 from utils.logs.logger import logger
 from utils.utils import create_update_from_json, get_telegram_bot_name_and_username_by_token
 from aiogram.types import Update
@@ -52,7 +53,7 @@ def assign_platform(agent_id):
 @limiter.limit("5 per minute", key_func=custom_limit_key)
 def create_session(agent_id):
     """
-    Создание новой сессии для агента.
+    Создание новой сессии для агента (WhatsApp/Telegram).
     """
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
@@ -62,7 +63,7 @@ def create_session(agent_id):
         platform_id = int(request.form.get('platform'))
         setup_mode = request.form.get('setup_mode')  # Ручная или автоматическая установка
 
-        # Если выбран Telegram (Бот)
+        # Telegram (бот)
         if platform_id == 2:
             # Если выбрана ручная установка, токен обязателен
             if setup_mode == "manual":
@@ -79,8 +80,8 @@ def create_session(agent_id):
                 bot_name, bot_username = get_telegram_bot_name_and_username_by_token(api_token)
             # Если выбрана автоматическая установка
             if setup_mode == "auto":
-                bot_name = request.form.get('bot_name')
-                bot_username = request.form.get('bot_username')
+                bot_name = request.form.get('telegram_bot_name')
+                bot_username = request.form.get('telegram_bot_username')
                 # Проверка обязательных полей
                 if not bot_name or not bot_username:
                     flash("Наименование и username бота обязательны для автоматической установки.", "error")
@@ -99,8 +100,36 @@ def create_session(agent_id):
             # Привязка вебхука и сохранение бота
             webhook_port = get_last_webhook_port()
             add_telegram_bot(session_id, api_token, bot_name, f'@{bot_username}', webhook_port)
-            flash('Бот успешно создан!', 'success')
-        if platform_id in [3, 4, 5]:
+            flash('Telegram бот успешно создан!', 'success')
+        # WhatsApp (бот)
+        if platform_id == 4:
+            # phone_number = request.form.get('whatsapp_phone_number', '').strip()
+            # bot_name = request.form.get('whatsapp_bot_name', '').strip()
+            # if not phone_number:
+            #     flash("Номер телефона обязателен.", "error")
+            #     return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+            # if not bot_name:
+            #     flash("Наименование бота обязательно.", "error")
+            #     return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+            # # Реализовать проверки
+            # # # Проверка корректности номера и его наличия в WhatsApp
+            # # if not is_whatsapp_number_valid(phone_number):
+            # #     flash("Указанный номер не зарегистрирован в WhatsApp.", "error")
+            # #     return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+            # # # Проверка наличия номера в базе
+            # # if is_whatsapp_number_in_db(phone_number):
+            # #     flash("Этот номер уже используется в системе.", "error")
+            # #     return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+            # # Создание сессии
+            # session_id = add_session(user_id, agent_id, platform_id)
+            # if session_id is None:
+            #     flash("Не удалось создать сессию. Попробуйте снова.", "error")
+            #     return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
+            # flash(f"Сессия {session_id} успешно создана.", "success")
+            # add_whatsapp_bot(session_id, bot_name, phone_number)
+            # flash('WhatsApp бот успешно создан!', 'success')
+            pass
+        if platform_id in [3, 5]:
             flash("Функционал ещё не реализован, вернитесь позже.", "error")
             return redirect(url_for('session_bp.assign_platform', agent_id=agent_id))
 
@@ -138,23 +167,38 @@ def sessions():
 @limiter.limit("5 per minute", key_func=custom_limit_key)
 def webhook(session_id):
     """
-    Обработка обновлений от Telegram.
+    Обработка обновлений от Telegram или WhatsApp.
     """
-    bot_runner = bot_manager.get_bot(session_id)
-    if not bot_runner:
-        logger.log(f"Bot for session {session_id} not found", level="ERROR")
-        return jsonify({"error": "Bot not found"}), 404
-    update_data = request.get_json()
-    try:
-        update = create_update_from_json(update_data)
-        loop = current_app.config["event_loop"]
-        asyncio.run_coroutine_threadsafe(
-            bot_runner.dp.feed_update(bot_runner.bot, update), loop
-        )
+    user_session = get_session_by_id(session_id)
+    # Telegram (бот)
+    if user_session['chat_type_id'] == 2:
+        bot_runner = telegram_bot_manager.get_bot(session_id)
+        if not bot_runner:
+            logger.log(f"Bot for session {session_id} not found", level="ERROR")
+            return jsonify({"error": "Bot not found"}), 404
+        update_data = request.get_json()
+        try:
+            update = create_update_from_json(update_data)
+            loop = current_app.config["event_loop"]
+            asyncio.run_coroutine_threadsafe(
+                bot_runner.dp.feed_update(bot_runner.bot, update), loop
+            )
+            return jsonify({"status": "success"}), 200
+        except Exception as e:
+            logger.log(f"Error processing webhook for session {session_id}: {str(e)}", level="ERROR")
+            return jsonify({"error": str(e)}), 500
+    # WhatsApp (бот)
+    elif user_session['chat_type_id'] == 4:
+        bot_runner = whatsapp_bot_manager.get_bot(session_id)
+        if not bot_runner:
+            logger.log(f"WhatsApp Bot for session {session_id} not found", level="ERROR")
+            return jsonify({"error": "Bot not found"}), 404
+        incoming_msg = request.values.get('Body', '').strip()
+        sender = request.values.get('From', '')
+        # Простая логика ответа на сообщения
+        response_message = f"Вы написали: {incoming_msg}"
+        bot_runner.send_message(sender, response_message)
         return jsonify({"status": "success"}), 200
-    except Exception as e:
-        logger.log(f"Error processing webhook for session {session_id}: {str(e)}", level="ERROR")
-        return jsonify({"error": str(e)}), 500
 
 
 @session_bp.route('/sessions/activate/<int:session_id>', methods=['POST'])
@@ -166,20 +210,46 @@ def activate_session(session_id):
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
-    try:
-        user_session = get_session_by_id(session_id)
-        if user_session:
-            token = user_session['api_token']
-            port = user_session['webhook_port']
-            asyncio.run_coroutine_threadsafe(bot_manager.start_bot(session_id, token, port), current_app.config["event_loop"])
-            activate_session_in_db(session_id)
-            flash(f"Сессия {session_id} успешно активирована!", "success")
-        else:
-            flash(f"Сессия {session_id} не найдена.", "error")
-    except Exception as e:
-        logger.log(f"Ошибка при активации сессии {session_id}: {e}", "ERROR")
-        flash(f"Ошибка при активации сессии {session_id}: {e}", "error")
-    return redirect(url_for('session_bp.sessions'))
+    user_session = get_session_by_id(session_id)
+    # Telegram (бот)
+    if user_session['chat_type_id'] == 2:
+        try:
+            user_session = get_session_by_id(session_id)
+            if user_session:
+                token = user_session['api_token']
+                port = user_session['webhook_port']
+                asyncio.run_coroutine_threadsafe(telegram_bot_manager.start_bot(session_id, token, port), current_app.config["event_loop"])
+                activate_session_in_db(session_id)
+                flash(f"Сессия {session_id} успешно активирована!", "success")
+            else:
+                flash(f"Сессия {session_id} не найдена.", "error")
+        except Exception as e:
+            logger.log(f"Ошибка при активации сессии {session_id}: {e}", "ERROR")
+            flash(f"Ошибка при активации сессии {session_id}: {e}", "error")
+        return redirect(url_for('session_bp.sessions'))
+    # WhatsApp (бот)
+    elif user_session['chat_type_id'] == 4:
+        # try:
+        #     if user_session:
+        #         phone_number = user_session['bot_username']  # Номер телефона
+        #         bot_name = user_session['bot_name']
+        #         if not phone_number:
+        #             flash("Номер телефона не найден для данной сессии.", "error")
+        #             return redirect(url_for('session_bp.sessions'))
+        #         # Запуск WhatsApp бота
+        #         asyncio.run_coroutine_threadsafe(
+        #             whatsapp_bot_manager.start_bot(session_id, phone_number),
+        #             current_app.config["event_loop"]
+        #         )
+        #         activate_session_in_db(session_id)
+        #         flash(f"WhatsApp бот для номера {phone_number} успешно активирован!", "success")
+        #     else:
+        #         flash(f"Сессия {session_id} не найдена.", "error")
+        # except Exception as e:
+        #     logger.log(f"Ошибка при активации WhatsApp сессии {session_id}: {e}", "ERROR")
+        #     flash(f"Ошибка при активации WhatsApp сессии {session_id}: {e}", "error")
+        # return redirect(url_for('session_bp.sessions'))
+        pass
 
 
 @session_bp.route('/sessions/terminate/<int:session_id>', methods=['POST'])
@@ -191,14 +261,20 @@ def terminate_session(session_id):
     if 'user_id' not in session:
         flash('Пожалуйста, авторизуйтесь', 'error')
         return redirect(url_for('user_bp.login'))
-    try:
-        asyncio.run_coroutine_threadsafe(bot_manager.stop_bot(session_id), current_app.config["event_loop"])
-        terminate_session_in_db(session_id)
-        flash(f"Сессия {session_id} успешно завершена!", "success")
-    except Exception as e:
-        logger.log(f"Ошибка при завершении сессии {session_id}: {e}", "ERROR")
-        flash(f"Ошибка при завершении сессии {session_id}: {e}", "error")
-    return redirect(url_for('session_bp.sessions'))
+    user_session = get_session_by_id(session_id)
+    # Telegram (бот)
+    if user_session['chat_type_id'] == 2:
+        try:
+            asyncio.run_coroutine_threadsafe(telegram_bot_manager.stop_bot(session_id), current_app.config["event_loop"])
+            terminate_session_in_db(session_id)
+            flash(f"Сессия {session_id} успешно завершена!", "success")
+        except Exception as e:
+            logger.log(f"Ошибка при завершении сессии {session_id}: {e}", "ERROR")
+            flash(f"Ошибка при завершении сессии {session_id}: {e}", "error")
+        return redirect(url_for('session_bp.sessions'))
+    # WhatsApp (бот)
+    elif user_session['chat_type_id'] == 4:
+        pass
 
 
 @session_bp.route('/sessions/configure/<int:session_id>', methods=['GET', 'POST'])
@@ -215,7 +291,7 @@ def configure_session(session_id):
         return redirect(url_for('session_bp.sessions'))
     try:
         user_session = get_session_by_id(session_id)
-        # Настройка Telegram (ботов)
+        # Telegram (бот)
         if user_session['chat_type_id'] == 2:
             if request.method == 'GET':
                 if not user_session:
@@ -237,13 +313,15 @@ def configure_session(session_id):
                 else:
                     flash("Настройки успешно обновлены!", "success")
                 return redirect(url_for('session_bp.sessions'))
+        # WhatsApp (бот)
+        elif session['chat_type_id'] == 4:
+            pass
         # Настройка остальных платформ
-        elif user_session['chat_type_id'] in [3, 4, 5]:
+        elif user_session['chat_type_id'] in [3, 5]:
             flash("Функционал ещё не реализован, вернитесь позже.", "error")
             return redirect(url_for('session_bp.sessions'))
-
         else:
-            flash('Настройка доступна только для Telegram ботов.', 'error')
+            flash('Настройка доступна только для Telegram и WhatsApp ботов.', 'error')
     except Exception as e:
         logger.log(f"Ошибка при настройке бота сессии {session_id}: {e}", "ERROR")
         flash(f"Ошибка: {e}", "error")

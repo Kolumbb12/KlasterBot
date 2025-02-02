@@ -2,7 +2,7 @@
 runner.py
 Модуль для запуска и управления Telegram-ботами с использованием библиотеки Aiogram.
 
-Этот файл содержит класс `BotRunner`, который позволяет запускать бота на вебхуке с использованием aiohttp-сервера.
+Этот файл содержит класс `TelegramBotRunner`, который позволяет запускать бота на вебхуке с использованием aiohttp-сервера.
 Он включает методы для обработки команд и сообщений, а также для остановки бота.
 
 Основные функции:
@@ -31,7 +31,7 @@ import os
 load_dotenv()
 
 
-class BotRunner:
+class TelegramBotRunner:
 
     def __init__(self, session_id, token, port):
         self.session_id = session_id

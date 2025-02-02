@@ -579,7 +579,7 @@ def get_all_sessions_except_admin(excluded_user_id):
         return []
 
 
-def get_all_active_sessions():
+def get_all_active_telegram_sessions():
     """
     Извлекает список всех активных сессий из базы данных.
     :return: Список активных сессий.
@@ -591,7 +591,28 @@ def get_all_active_sessions():
                 SELECT s.id, s.agent_id, s.chat_type_id, b.api_token, s.is_active, s.created_at, s.updated_at
                 FROM sessions s
                 INNER JOIN bots b ON s.id = b.session_id
-                WHERE s.is_active = TRUE AND s.is_deleted = FALSE
+                WHERE s.is_active = TRUE AND s.is_deleted = FALSE AND s.chat_type_id = 2
+            """)
+            sessions = cursor.fetchall()
+            return sessions
+    except Error as e:
+        logger.log(f"Ошибка при получении активных сессий: {e}", "ERROR")
+        return []
+
+
+def get_all_active_whatsapp_sessions():
+    """
+    Извлекает список всех активных сессий из базы данных.
+    :return: Список активных сессий.
+    """
+    try:
+        connection = db_instance.get_connection()
+        with connection.cursor(dictionary=True) as cursor:
+            cursor.execute("""
+                SELECT s.id, s.agent_id, s.chat_type_id, b.bot_username, s.is_active, s.created_at, s.updated_at
+                FROM sessions s
+                INNER JOIN bots b ON s.id = b.session_id
+                WHERE s.is_active = TRUE AND s.is_deleted = FALSE AND s.chat_type_id = 4
             """)
             sessions = cursor.fetchall()
             return sessions
@@ -611,7 +632,8 @@ def get_session_by_id(session_id):
         with connection.cursor(dictionary=True) as cursor:
             cursor.execute("""
                 SELECT s.id, s.agent_id, s.chat_type_id, s.user_id, s.is_active, b.api_token, b.webhook_port,
-                       s.created_at, s.updated_at, b.bot_name, b.bot_username, b.bot_description, a.name AS agent_name, ct.name AS platform
+                       s.created_at, s.updated_at, b.bot_name, b.bot_username, b.bot_description, a.name AS agent_name,
+                       ct.id as chat_type_id, ct.name AS platform
                 FROM sessions s
                 INNER JOIN gpt_agents a ON s.agent_id = a.id
                 INNER JOIN chat_types ct ON s.chat_type_id = ct.id
@@ -690,6 +712,25 @@ def add_telegram_bot(session_id, api_token, bot_name, bot_username, webhook_port
     except Error as e:
         logger.log(f"Ошибка при создании телеграм бота: {e}", "ERROR")
         return None
+
+
+def add_whatsapp_bot(session_id, bot_name, bot_username):
+    """
+    Добавляет запись о новом WhatsApp-боте в базу данных.
+    :param session_id: Идентификатор сессии.
+    :param bot_name: Наименование бота.
+    :param bot_username: В данном случае это номер телефона whatsapp аккаунта.
+    """
+    try:
+        connection = db_instance.get_connection()
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO bots (session_id, bot_name, bot_username, created_at, updated_at)
+                VALUES (%s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            """, (session_id, bot_name, bot_username))
+            connection.commit()
+    except Error as e:
+        logger.log(f"Ошибка при добавлении WhatsApp-бота: {e}", "ERROR")
 
 
 def is_telegram_token_api_exists(api_token):

@@ -22,8 +22,8 @@ def create_app():
     # Устанавливаем секретный ключ для сессий
     app.config["SECRET_KEY"] = os.urandom(24)
 
-    # Применяем Limiter к приложению
-    limiter.init_app(app)
+    # # Применяем Limiter к приложению
+    # limiter.init_app(app)
 
 
     # Регистрируем blueprints

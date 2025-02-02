@@ -1,6 +1,6 @@
 <!--
 assign_platform.html
-Шаблон для назначения платформы агенту. Позволяет выбрать платформу, установить режим установки (ручной или автоматический) 
+Шаблон для назначения платформы агенту. Позволяет выбрать платформу, установить режим установки (ручной или автоматический)
 и ввести необходимые данные для создания сессии.
 -->
 
@@ -17,7 +17,7 @@ assign_platform.html
 <div class="container">
     <!-- Заголовок страницы с указанием имени агента -->
     <h1>Назначить платформу для агента: {{ agent.name }}</h1>
-    
+
     <!-- Форма для выбора платформы и установки параметров -->
     <form method="POST" action="{{ url_for('session_bp.create_session', agent_id=agent.id) }}" enctype="multipart/form-data" onsubmit="return validateForm()">
         <!-- Выбор платформы -->
@@ -30,7 +30,7 @@ assign_platform.html
             {% endfor %}
         </select>
 
-        <!-- Секция для выбора режима установки (отображается при выборе платформы) -->
+        <!-- Секция для выбора режима установки (отображается при выборе Telegram) -->
         <div id="setup-options" style="display: none;">
             <label for="setup_mode">Выберите режим установки:</label>
             <select name="setup_mode" id="setup_mode" onchange="toggleFields()">
@@ -40,18 +40,26 @@ assign_platform.html
             </select>
         </div>
 
-        <!-- Поля для ручной установки -->
+        <!-- Поля для ручной установки Telegram -->
         <div id="manual-setup" style="display: none;">
             <label for="api_token">Введите токен Telegram бота:</label>
             <input type="text" name="api_token" id="api_token" placeholder="Введите токен" />
         </div>
 
-        <!-- Поля для автоматической установки -->
+        <!-- Поля для автоматической установки Telegram -->
         <div id="auto-setup" style="display: none;">
-            <label for="bot_name">Наименование бота:</label>
-            <input type="text" name="bot_name" placeholder="Введите наименование бота" />
-            <label for="bot_username">Username бота:</label>
-            <input type="text" name="bot_username" placeholder="Введите username бота" />
+            <label for="telegram_bot_name">Наименование бота:</label>
+            <input type="text" name="telegram_bot_name" placeholder="Введите наименование бота" />
+            <label for="telegram_bot_username">Username бота:</label>
+            <input type="text" name="telegram_bot_username" placeholder="Введите username бота" />
+        </div>
+
+        <!-- Поле для ввода номера телефона WhatsApp -->
+        <div id="whatsapp-setup" style="display: none;">
+            <label for="whatsapp_phone_number">Введите номер телефона для WhatsApp:</label>
+            <input type="text" name="whatsapp_phone_number" id="whatsapp_phone_number" placeholder="+7XXXXXXXXXX" required />
+            <label for="whatsapp_bot_name">Наименование бота:</label>
+            <input type="text" name="whatsapp_bot_name" id="whatsapp_bot_name" placeholder="Введите наименование бота" required />
         </div>
 
         <!-- Кнопка отправки формы -->
