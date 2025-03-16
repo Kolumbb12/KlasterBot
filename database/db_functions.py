@@ -10,6 +10,7 @@ from database.db_connection import db_instance
 from utils.logs.logger import logger
 from application.services.telegram.bot_configurator import update_bot_name, update_bot_description
 
+
 ######################################## Функции для работы с таблицей "users" #########################################
 
 def get_user_by_id(user_id):
@@ -157,6 +158,23 @@ def check_user_exists(user_id):
         connection = db_instance.get_connection()
         with connection.cursor() as cursor:
             cursor.execute("SELECT COUNT(*) FROM users WHERE id = %s", (user_id,))
+            result = cursor.fetchone()
+            return result[0] > 0
+    except Error as e:
+        logger.log(f"Ошибка при проверке пользователя: {e}", "ERROR")
+        return False
+
+
+def check_user_exists_by_full_name(full_name):
+    """
+    Проверяет, существует ли пользователь с указанным full_name.
+    :param full_name: Полное имя пользователя, которого нужно проверить.
+    :return: True, если пользователь существует, иначе False.
+    """
+    try:
+        connection = db_instance.get_connection()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM users WHERE full_name = %s", (full_name,))
             result = cursor.fetchone()
             return result[0] > 0
     except Error as e:
@@ -752,6 +770,25 @@ def is_telegram_token_api_exists(api_token):
         return False
 
 
+def is_whatsapp_number_in_db(phone_number):
+    """
+    Проверяет, существует ли номер телефона в базе данных.
+
+    :param phone_number: Номер телефона для проверки.
+    :return: True, если телефон существует, иначе False.
+    """
+    try:
+        connection = db_instance.get_connection()
+        with connection.cursor() as cursor:
+            query = "SELECT COUNT(*) FROM bots WHERE bot_username = %s"
+            cursor.execute(query, (phone_number,))
+            result = cursor.fetchone()
+            return result[0] > 0
+    except Error as e:
+        logger.log(f"Ошибка при проверке токена: {e}", "ERROR")
+        return False
+
+
 def get_webhook_port(session_id):
     """
     Возвращает порт вебхука в указанной сессии.
@@ -831,5 +868,3 @@ def update_bot_description_db(session_id, new_bot_description):
     except Exception as e:
         logger.log(f"Ошибка при обновлении описания бота в БД: {e}", "ERROR")
         return False
-
-

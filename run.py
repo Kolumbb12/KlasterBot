@@ -45,7 +45,7 @@ async def start_all_whatsapp_bots():
     """
     Асинхронный запуск всех активных ботов.
     """
-    active_whatsapp_sessions = get_all_active_telegram_sessions()
+    active_whatsapp_sessions = get_all_active_whatsapp_sessions()
     await whatsapp_bot_manager.start_all_bots(active_whatsapp_sessions)
 
 
@@ -58,13 +58,13 @@ def run_flask():
 
 if __name__ == "__main__":
     try:
-        # Запускаем всех активных ботов в главном цикле событий
-        asyncio.run_coroutine_threadsafe(start_all_telegram_bots(), main_event_loop)
-        asyncio.run_coroutine_threadsafe(start_all_whatsapp_bots(), main_event_loop)
-
         # Запускаем Flask в отдельном потоке
         flask_thread = threading.Thread(target=run_flask)
         flask_thread.start()
+
+        # Запускаем всех активных ботов в главном цикле событий
+        asyncio.run_coroutine_threadsafe(start_all_telegram_bots(), main_event_loop)
+        asyncio.run_coroutine_threadsafe(start_all_whatsapp_bots(), main_event_loop)
 
         # Запускаем основной событийный цикл
         main_event_loop.run_forever()

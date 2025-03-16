@@ -52,6 +52,10 @@ sessions.html
                         <a target="_blank" class="td-link" href="https://wa.me/{{ session.bot_username|replace('@', '') }}">
                             {{ session.bot_username }}
                         </a>
+                        <div id="qr-container-{{ session.id }}">
+                            <p>Загрузка QR-кода...</p>
+                            <img alt="" id="qr-img-{{ session.id }}" src="" style="display: none; width: 200px;">
+                        </div>
                     {% else %}
                         <a target="_blank" class="td-link" href="https://example.com/other-platform/{{ session.bot_username|replace('@', '') }}">
                             {{ session.bot_username }}
@@ -117,6 +121,10 @@ sessions.html
                         <a target="_blank" class="td-link" href="https://wa.me/{{ session.bot_username|replace('@', '') }}">
                             {{ session.bot_username }}
                         </a>
+                        <div id="qr-container-{{ session.id }}">
+                            <p>Загрузка QR-кода...</p>
+                            <img alt="" id="qr-img-{{ session.id }}" src="" style="display: none; width: 200px;">
+                        </div>
                     {% else %}
                         <a target="_blank" class="td-link" href="https://example.com/other-platform/{{ session.bot_username|replace('@', '') }}">
                             {{ session.bot_username }}

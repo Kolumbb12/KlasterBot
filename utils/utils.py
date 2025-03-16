@@ -33,15 +33,20 @@ def validate_email(email):
 
 def validate_phone_number(phone_number):
     """
-    Проверяет корректность номера телефона.
+    Проверяет корректность номера телефона с использованием регулярных выражений.
     :param phone_number: Строка с номером телефона.
     :return: Сообщение об ошибке или None, если номер корректный.
     """
-    if phone_number:
-        if not phone_number.isdigit():
-            return "Номер телефона может содержать только цифры."
-        if len(phone_number) > 15:
-            return "Номер телефона не может превышать 15 символов."
+    if not phone_number:
+        return "Номер телефона не может быть пустым."
+    # Регулярное выражение для проверки номера телефона
+    pattern = re.compile(r'^\+?[0-9\s\-\(\)]{6,15}$')
+    if not pattern.match(phone_number):
+        return "Номер телефона имеет неверный формат."
+    # Удаляем все нецифровые символы для проверки длины
+    digits_only = re.sub(r'[^0-9]', '', phone_number)
+    if len(digits_only) < 6 or len(digits_only) > 15:
+        return "Номер телефона должен содержать от 6 до 15 цифр."
     return None
 
 def validate_password(password):

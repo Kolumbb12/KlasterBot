@@ -19,7 +19,9 @@ assign_platform.html
     <h1>Назначить платформу для агента: {{ agent.name }}</h1>
 
     <!-- Форма для выбора платформы и установки параметров -->
-    <form method="POST" action="{{ url_for('session_bp.create_session', agent_id=agent.id) }}" enctype="multipart/form-data" onsubmit="return validateForm()">
+{#    <form method="POST" action="{{ url_for('session_bp.create_session', agent_id=agent.id) }}" enctype="multipart/form-data" onsubmit="return validateForm()">#}
+    <form method="POST" action="{{ url_for('session_bp.create_session', agent_id=agent.id) }}" enctype="multipart/form-data" onsubmit="console.log('Форма отправлена!'); return validateForm();">
+
         <!-- Выбор платформы -->
         <label for="platform">Выберите платформу:</label>
         <select name="platform" id="platform" onchange="toggleSetupMode()">

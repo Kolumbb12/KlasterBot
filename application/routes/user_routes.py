@@ -70,6 +70,25 @@ def logout():
     return redirect(url_for('user_bp.login'))
 
 
+@user_bp.route('/user_list')
+@limiter.limit("5 per minute", key_func=custom_limit_key)
+def user_list():
+    """
+    Маршрут для отображения списка пользователей (доступен только администраторам).
+
+    Обрабатывает GET запрос:
+    - GET: Отображает список всех пользователей, доступных в системе.
+
+    :return: Шаблон user_list.html с данными пользователей.
+    """
+    if session.get('role_id') != 1:
+        flash("У вас нет прав доступа", "error")
+        return redirect(url_for('agent_bp.agent_selection'))
+    users = get_all_users()  # Функция для получения всех пользователей
+    print(users)
+    return render_template('user_list.html', users=users)
+
+
 @user_bp.route('/user_profile', methods=['GET', 'POST'])
 @limiter.limit("5 per minute", key_func=custom_limit_key)
 def user_profile():
@@ -86,11 +105,14 @@ def user_profile():
         flash("Пожалуйста, авторизуйтесь", "error")
         return redirect(url_for('user_bp.login'))
 
-    user_id = request.args.get('user_id') or request.form.get('user_id') or session['user_id']
+    user_id = request.args.get('user_id') or session.get('user_id')
 
-    if not has_access(user_id, 'user', session['user_id'], session.get('role_id')):
-        flash("У вас нет прав на доступ к этому профилю.", "error")
-        return redirect(url_for('session_bp.sessions'))
+    print(user_id)
+
+    if session.get('role_id') != 1:
+        if not has_access(user_id, 'user', session['user_id'], session.get('role_id')):
+            flash("У вас нет прав на доступ к этому профилю.", "error")
+            return redirect(url_for('user_bp.user_profile'))
 
     user = get_user_by_id(user_id)
 
@@ -223,22 +245,3 @@ def add_user():
             flash("Заполните все поля", "error")
 
     return render_template('add_user.html')
-
-
-@user_bp.route('/user_list')
-@limiter.limit("5 per minute", key_func=custom_limit_key)
-def user_list():
-    """
-    Маршрут для отображения списка пользователей (доступен только администраторам).
-
-    Обрабатывает GET запрос:
-    - GET: Отображает список всех пользователей, доступных в системе.
-
-    :return: Шаблон user_list.html с данными пользователей.
-    """
-    if session.get('role_id') != 1:
-        flash("У вас нет прав доступа", "error")
-        return redirect(url_for('agent_bp.agent_selection'))
-
-    users = get_all_users()  # Функция для получения всех пользователей
-    return render_template('user_list.html', users=users)

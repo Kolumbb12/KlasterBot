@@ -25,12 +25,18 @@ def create_app():
     # # Применяем Limiter к приложению
     # limiter.init_app(app)
 
-
     # Регистрируем blueprints
     app.register_blueprint(user_bp)
     app.register_blueprint(agent_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(session_bp)
+
+    @app.route('/receive_data', methods=['POST'])
+    def receive_data():
+        data = request.json  # Получаем JSON из запроса
+        print("Полученные данные:", data)
+        # Можно обработать данные и сохранить в БД
+        return jsonify({"status": "success", "message": "Данные получены"}), 200
 
     @app.errorhandler(429)
     def ratelimit_error(e):
