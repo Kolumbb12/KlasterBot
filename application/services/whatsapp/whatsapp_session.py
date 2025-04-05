@@ -1,3 +1,6 @@
+import asyncio
+
+
 class WhatsAppSession:
     """Класс для представления одной сессии BAS."""
 
@@ -7,9 +10,11 @@ class WhatsAppSession:
         self.manager = manager
         self.process_pid = None
 
-    def start(self):
-        """Запускает сессию BAS."""
-        self.process_pid = self.manager.start_session(self.session_id)
+    async def start_async(self):
+        """Асинхронный запуск сессии BAS."""
+        loop = asyncio.get_running_loop()
+        self.process_pid = await loop.run_in_executor(None, self.manager.start_session, self.session_id)
+
         if not self.process_pid:
             print(f"Ошибка запуска сессии {self.session_id}")
         else:

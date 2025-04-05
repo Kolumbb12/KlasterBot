@@ -5,6 +5,7 @@ gpt_api.py
 """
 
 import openai
+
 from database.db_functions import get_agent_by_id
 from utils.utils import convert_decimals
 from utils.logs.logger import logger

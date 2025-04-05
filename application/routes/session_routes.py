@@ -236,12 +236,11 @@ def activate_session(session_id):
             storage[session_id] = {}
 
             # Запуск BAS и ожидание QR-кода
-            # asyncio.run_coroutine_threadsafe(
-            #     whatsapp_bot_manager.start_bot(session_id, phone_number),
-            #     current_app.config["event_loop"]
-            # )
+            asyncio.run_coroutine_threadsafe(
+                whatsapp_bot_manager.start_bot(session_id, phone_number),
+                current_app.config["event_loop"]
+            )
 
-            # activate_session_in_db(session_id)
             flash(f"WhatsApp бот для номера {phone_number} успешно активирован!", "success")
         except Exception as e:
             logger.log(f"Ошибка при активации WhatsApp сессии {session_id}: {e}", "ERROR")
@@ -357,7 +356,7 @@ def get_qr(session_id):
     Фронтенд запрашивает QR-код. Если он есть в памяти — отдаем.
     """
     global storage
-    qr_code = storage.get(session_id).get("qr_code")  # Достаём из памяти
+    qr_code = storage.get(session_id).get("qr_code") if storage.get(session_id) else ''  # Достаём из памяти
     if not qr_code:
         return jsonify({"error": "QR-код не найден"}), 404
     return jsonify({"session_id": session_id, "qr_code": qr_code})
