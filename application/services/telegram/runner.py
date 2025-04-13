@@ -40,7 +40,8 @@ class TelegramBotRunner:
         self.bot = Bot(token=self.token, skip_updates=False)  # Инициализация бота
         self.dp = Dispatcher()  # Инициализация диспетчера
         self.dp["bot"] = self.bot  # Добавление бота в контекст диспетчера
-        self.webhook_url = f"{os.getenv('NGROK_ADDRESS')}/webhook/{self.session_id}"
+        # self.webhook_url = f"{os.getenv('NGROK_ADDRESS')}/webhook/{self.session_id}"
+        self.webhook_url = f"{os.getenv('SERVER_ADDRESS')}/webhook/{self.session_id}"
 
     async def start_webhook(self):
         """
