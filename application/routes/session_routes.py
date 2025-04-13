@@ -397,5 +397,5 @@ def get_whatsapp_bot_answer(session_id):
     agent = get_agent_by_id(session['agent_id'])
     conversation_history = get_chat_history_by_session_id_and_user_id(session_id, user_id) or []
     response = generate_response(agent_id=agent['id'], user_input=user_message, conversation_history=conversation_history)
-    insert_chat_message_for_session(user_id, agent['id'], 2, session_id, user_message, response)
+    insert_chat_message_for_session(user_id, agent['id'], 4, session_id, user_message, response)
     return jsonify({"session_id": session_id, "bot_answer": response})

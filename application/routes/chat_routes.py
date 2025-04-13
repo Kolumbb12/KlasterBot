@@ -138,9 +138,9 @@ def all_chats():
         return redirect(url_for('chat_bp.all_chats'))
 
     # Проверка доступа к чатам
-    if user_id and not has_access(user_id, 'user', session['user_id'], session.get('role_id')):
-        flash("У вас нет прав на просмотр чатов этого пользователя.", "error")
-        return redirect(url_for('chat_bp.all_chats'))
+    # if user_id and not has_access(user_id, 'user', session['user_id'], session.get('role_id')):
+    #     flash("У вас нет прав на просмотр чатов этого пользователя.", "error")
+    #     return redirect(url_for('chat_bp.all_chats'))
 
     try:
         # Загружаем пользователей и историю чатов

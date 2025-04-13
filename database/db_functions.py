@@ -489,7 +489,7 @@ def get_available_platforms(agent_id):
                 SELECT ct.id, ct.name 
                 FROM chat_types ct
                 LEFT JOIN sessions s ON ct.id = s.chat_type_id AND s.agent_id = %s AND s.is_deleted = FALSE
-                WHERE ct.id > 1 AND s.id IS NULL
+                WHERE ct.id > 1 AND s.id IS NULL AND ct.is_deleted = FALSE
             """, (agent_id,))
             platforms = cursor.fetchall()
             return platforms
